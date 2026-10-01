@@ -1066,7 +1066,7 @@
     const when = at ? new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(at)) : '';
     const name = load('name', '');
     return `<article class="card submit-card">
-      <div class="score"><span class="big">${right} / ${total}${mark('ok')}</span><p>숙제를 다 풀었어요. 아래 결과를 선생님께 보내 주세요.</p></div>
+      <div class="score"><span class="big">${right} / ${total}${mark('ok')}</span><p>숙제를 다 풀었어요. 이름을 적고 아래 방법대로 결과를 선생님께 보내 주세요.</p></div>
       <div class="submit-sheet" id="submit-sheet">
         <div class="submit-row"><span class="k">숙제</span><span>${esc(s.title)}</span></div>
         <div class="submit-row"><label class="k" for="hw-name">이름</label><input id="hw-name" autocomplete="name" placeholder="이름을 적어 주세요" value="${esc(name)}"></div>
@@ -1074,9 +1074,15 @@
         <div class="submit-row"><span class="k">완료</span><span>${when}</span></div>
         <div class="ox-grid" aria-label="문제별 결과">${deck.map((_, i) => `<span class="${results.at(i).correct ? 'o' : 'x'}">${i + 1}</span>`).join('')}</div>
       </div>
+      <ol class="send-steps">
+        <li>위 칸에 <b>이름</b>을 적어요.</li>
+        <li><b>[카톡으로 보내기]</b>를 누르고, 나오는 목록에서 <b>카카오톡</b> → <b>선생님</b>(또는 반 단톡방)을 골라 보내요.</li>
+        <li>카톡이 목록에 없으면 <b>[결과 복사]</b>를 누르고, 카톡의 선생님 채팅방 입력 칸을 길게 눌러 <b>붙여넣기</b> → 보내기.</li>
+      </ol>
       <div class="row">
         ${wrongNums.length ? '<button class="btn ghost" type="button" data-act="retry-wrong">틀린 문제만 다시</button>' : ''}
-        <button class="btn" type="button" data-act="copy">결과 복사</button>
+        <button class="btn ghost" type="button" data-act="copy">결과 복사</button>
+        <button class="btn" type="button" data-act="share">카톡으로 보내기</button>
       </div>
       <p class="copy-msg" id="copy-msg" role="status"></p>
       <textarea class="copy-fallback" id="copy-fallback" hidden readonly aria-label="복사할 결과"></textarea>
@@ -1276,13 +1282,23 @@
     if (self) { answer(self.dataset.self); return true; }
     if (act === 'reveal') { revealed.add(deck.at(idx).src); renderStage(); return true; }
     if (act === 'hw-back') { start(); return true; }
-    if (act === 'copy') {
+    if (act === 'copy' || act === 'share') {
       const nameEl = $('#hw-name'); if (nameEl) save('name', nameEl.value.trim());
-      const text = hwResultText(), msg = $('#copy-msg'), box = $('#copy-fallback');
-      const fallback = () => { box.hidden = false; box.value = text; box.focus(); box.select(); msg.textContent = '아래 글을 길게 눌러 복사한 뒤 카톡에 붙여 넣어 주세요.'; };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => { msg.textContent = '복사했어요. 카톡에 붙여 넣어 선생님께 보내 주세요.'; }, fallback);
-      } else fallback();
+      const msg = $('#copy-msg'), box = $('#copy-fallback');
+      // 이름이 없으면 선생님이 누구 결과인지 알 수 없어서 먼저 적게 함
+      if (!load('name', '')) { msg.textContent = '이름을 먼저 적어 주세요.'; if (nameEl) nameEl.focus(); return true; }
+      const text = hwResultText();
+      const fallback = () => { box.hidden = false; box.value = text; box.focus(); box.select(); msg.textContent = '아래 글을 길게 눌러 복사한 뒤, 카톡의 선생님 채팅방에 붙여 넣어 보내 주세요.'; };
+      const copy = () => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => { msg.textContent = '복사했어요. 카톡을 열어 선생님 채팅방 입력 칸을 길게 눌러 붙여넣기 한 뒤 보내 주세요.'; }, fallback);
+        } else fallback();
+      };
+      // 카톡으로 보내기: 휴대폰의 공유하기 목록(카카오톡 등)을 띄움. 공유하기가 없는 브라우저(PC 등)는 복사로
+      if (act === 'share' && navigator.share) {
+        navigator.share({ title: `${CFG.title} 숙제 결과`, text }).then(() => { msg.textContent = '보냈어요. 선생님 채팅방에 잘 갔는지 확인해 주세요.'; },
+          err => { if (!err || err.name !== 'AbortError') copy(); });
+      } else copy();
       return true;
     }
     if (act === 'hw-reset') {

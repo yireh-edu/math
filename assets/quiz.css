@@ -311,6 +311,8 @@ button.dot.now{outline:2px solid var(--sel); outline-offset:2px}
 .ox-grid span{position:relative; text-align:center; font-size:12px; padding:4px 0; border-radius:6px; font-variant-numeric:tabular-nums; border:1px solid var(--line); background:var(--card)}
 .ox-grid .o{border-color:var(--pen); color:var(--pen); font-weight:600}
 .ox-grid .x{color:var(--muted); text-decoration:line-through; text-decoration-color:var(--pen)}
+.send-steps{margin:0; padding-left:22px; font-size:14px; line-height:1.6; color:var(--muted)}
+.send-steps b{color:var(--ink); font-weight:600}
 .copy-msg{margin:0; font-size:14px; color:var(--sel); text-align:right; min-height:1em}
 .copy-fallback{width:100%; min-height:120px; font:inherit; font-size:14px; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--paper); color:var(--ink)}
 @media (max-width:420px){ .ox-grid{grid-template-columns:repeat(5, 1fr)} }
