@@ -1178,8 +1178,7 @@
     }
     drafts = []; save(draftKey(), []);
     idx = deck.length;
-    stash(); renderTabs(); renderDay(); renderStage();
-    const sc = document.querySelector('.ws .score'); if (sc && sc.scrollIntoView) sc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    stash(); renderTabs(); renderDay(); renderStage();   // 채점해도 화면은 그대로 (어떤 버튼도 화면을 움직이지 않음)
   }
   function isCorrect(q, value) {
     if (q.type === 'mc') return String(value) !== '' && Number(value) === q.ans;
@@ -1261,15 +1260,7 @@
     renderTabs(); renderDay(); renderStage();
     const nb = $('#next-btn'); if (nb) nb.focus({ preventScroll: true });
   }
-  // 다음 문제·번호 버튼: 페이지 맨 위가 아니라 문제 번호 줄로. 번호 줄이 이미 화면 위쪽에 보이면 그대로 둠
-  function toQuestion() {
-    const dots = $('#dots'), el = dots && dots.offsetHeight ? dots : $('#stage');
-    if (!el || !el.getBoundingClientRect) return;
-    const top = el.getBoundingClientRect().top;
-    if (top >= 0 && top < window.innerHeight * 0.4) return;
-    window.scrollTo({ top: Math.max(0, window.scrollY + top - 8), behavior: 'smooth' });
-  }
-  function next() { stopSpeech(); closeScratch(); idx += 1; stash(); renderStage(); toQuestion(); }
+  function next() { stopSpeech(); closeScratch(); idx += 1; stash(); renderStage(); }
 
   // 숙제 모드 전용 버튼들. 처리했으면 true
   let resetArmed = false;
@@ -1282,8 +1273,7 @@
     const go = e.target.closest('[data-goto]');
     if (go) {
       stopSpeech(); closeScratch(); resetArmed = false;
-      idx = Number(go.dataset.goto); stash(); renderStage();
-      toQuestion();
+      idx = Number(go.dataset.goto); stash(); renderStage();   // 화면은 누른 자리 그대로 (위로 움직이지 않음)
       return true;
     }
     const self = e.target.closest('[data-self]');
@@ -1294,9 +1284,9 @@
       const nameEl = $('#hw-name'); if (nameEl) save('name', nameEl.value.trim());
       const msg = $('#copy-msg'), box = $('#copy-fallback');
       // 이름이 없으면 선생님이 누구 결과인지 알 수 없어서 먼저 적게 함
-      if (!load('name', '')) { msg.textContent = '이름을 먼저 적어 주세요.'; if (nameEl) nameEl.focus(); return true; }
+      if (!load('name', '')) { msg.textContent = '이름을 먼저 적어 주세요.'; if (nameEl) nameEl.focus({ preventScroll: true }); return true; }
       const text = hwResultText();
-      const fallback = () => { box.hidden = false; box.value = text; box.focus(); box.select(); msg.textContent = '아래 글을 길게 눌러 복사한 뒤, 카톡의 선생님 채팅방에 붙여 넣어 보내 주세요.'; };
+      const fallback = () => { box.hidden = false; box.value = text; box.focus({ preventScroll: true }); box.select(); msg.textContent = '아래 글을 길게 눌러 복사한 뒤, 카톡의 선생님 채팅방에 붙여 넣어 보내 주세요.'; };
       const copy = () => {
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(text).then(() => { msg.textContent = '복사했어요. 카톡을 열어 선생님 채팅방 입력 칸을 길게 눌러 붙여넣기 한 뒤 보내 주세요.'; }, fallback);
@@ -1329,8 +1319,7 @@
     const goBtn = !HW && e.target.closest('[data-goto]');
     if (goBtn) {
       stopSpeech(); closeScratch();
-      idx = Number(goBtn.dataset.goto); stash(); renderStage();
-      toQuestion();
+      idx = Number(goBtn.dataset.goto); stash(); renderStage();   // 화면은 누른 자리 그대로 (위로 움직이지 않음)
       return;
     }
     const conceptBtn = e.target.closest('[data-concept]');
@@ -1377,7 +1366,7 @@
       if (tr.dataset.track === track) return;
       stopSpeech(); closeScratch(); track = tr.dataset.track; save(`track-${CFG.grade || 'level'}`, track);
       if (DRILL) { save(`op-${opOf(track).key}`, track); tab = 'practice'; save(`tabsel-${CFG.grade}`, tab); start(true); return; }
-      if (STAGE) { tab = 'practice'; save(`tabsel-${CFG.grade}`, tab); start(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+      if (STAGE) { tab = 'practice'; save(`tabsel-${CFG.grade}`, tab); start(); return; }
       tab = 'period'; save(`tabsel-${CFG.grade}`, tab); view = THIS_PERIOD; start(); return;
     }
     const tb = e.target.closest('[data-tab]');
@@ -1472,6 +1461,15 @@
     else if (e.key === 'Enter' && results.at(idx) && !e.target.closest('button')) next();
   });
 
+  // 화면 맨 아래 작은 버전 표시 (예: 버전 10.01 16:30) — 새로 올린 파일이 반영됐는지 확인용
+  const VER_TAG = (() => {
+    const m = ((document.currentScript && document.currentScript.src) || '').match(/[?&]v=(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/);
+    if (!m) return '';
+    // 빌드 번호는 세계 표준시라 한국 시간으로 바꿔 보여 줌
+    const t = new Date(Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5]) + 9 * 36e5);
+    const p = n => String(n).padStart(2, '0');
+    return `<br><span class="ver">버전 ${p(t.getUTCMonth() + 1)}.${p(t.getUTCDate())} ${p(t.getUTCHours())}:${p(t.getUTCMinutes())}</span>`;
+  })();
   // 한 줄 로고(예: "이레수학" 그림) 옆에는 제목에서 로고 글자를 뺀 나머지만 (중1, 숙제 …). 읽기 프로그램에는 전체 제목
   function brandRow(src, logoText, heading) {
     const rest = heading.startsWith(logoText) ? heading.slice(logoText.length).trim() : heading;
@@ -1494,7 +1492,7 @@
     <section class="day" id="day" aria-live="polite"></section>
     <div class="dots" id="dots" role="navigation" aria-label="문제 번호"></div>
     <main id="stage"></main>
-    <footer>${CFG.footer || ''}</footer>`;
+    <footer>${CFG.footer || ''}${VER_TAG}</footer>`;
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && present) closePresent(); });
   window.IRAE_READY = () => { typeset($('#stage')); if (present) typeset($('#present .p-stage')); };
   // 점검용: 문제 하나를 만들어 보거나 과정을 바꿔 봄

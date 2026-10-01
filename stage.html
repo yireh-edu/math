@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Nanum+Pen+Script&display=swap">
-<link rel="stylesheet" href="assets/quiz.css?v=202610011223">
-<link rel="preload" href="assets/quiz.js?v=202610011223" as="script">
+<link rel="stylesheet" href="assets/quiz.css?v=202610011244">
+<link rel="preload" href="assets/quiz.js?v=202610011244" as="script">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#C8392B">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/app-192.png">
@@ -157,7 +157,7 @@
     msg('#bk-msg1', ''); msg('#bk-msg2', '');
     $('#bk-last').textContent = lastText();
     box.hidden = false;
-    $('[data-bk="copy"]').focus();
+    $('[data-bk="copy"]').focus({ preventScroll: true });
   }
   function close() { if (box) box.hidden = true; }
   function act(a) {
@@ -242,8 +242,8 @@ window.MathJax = { tex: { inlineMath: [['$', '$']] }, svg: { fontCache: 'global'
   startup: { typeset: false, ready() { MathJax.startup.defaultReady(); MathJax.startup.promise.then(function () { window.IRAE_READY && window.IRAE_READY(); }); } } };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" async></script>
-<script src="assets/stage-data.js?v=202610011223"></script>
-<script src="assets/quiz.js?v=202610011223"></script>
+<script src="assets/stage-data.js?v=202610011244"></script>
+<script src="assets/quiz.js?v=202610011244"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(function () {});
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});

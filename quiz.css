@@ -170,6 +170,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--sel); outline-offse
 .wrong-list li{border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; word-break:keep-all}
 .empty{color:var(--muted); margin:0}
 footer{font-size:13px; color:var(--muted); text-align:center}
+footer .ver{font-size:11px; opacity:.7}
 mjx-container{color:inherit}
 
 /* 이레 영어: 단어 배열 · 철자 힌트 · 소리 듣기 */
