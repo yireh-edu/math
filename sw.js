@@ -2,11 +2,13 @@
  * 이레 수학 숙제 서비스 워커 — "인터넷 먼저" 방식
  * - 사이트 파일(페이지·문제·프로그램): 항상 인터넷에서 새로 받고, 받은 것을 저장해 둠.
  *   인터넷이 안 되거나 4초 안에 응답이 없을 때만 저장해 둔 것을 보여 줌.
+ * - 버전 번호(?v=)가 붙은 파일(프로그램·문제·글꼴 모양): 같은 번호면 내용이 같으므로 저장본을 바로 씀 (화면이 빨리 뜸).
+ *   새로 올리면 페이지가 새 번호로 부르므로 그때 새로 받음.
  * - 글꼴·수식 도구(다른 사이트 파일): 자주 바뀌지 않으므로 저장본을 먼저 씀.
  * - 학생 기록(localStorage)은 건드리지 않음.
  * 이 파일은 빌드할 때마다 새 버전 번호가 들어가서, 올리면 자동으로 새 버전으로 바뀝니다.
  */
-const VERSION = '202610010714';
+const VERSION = '202610011223';
 const SITE_CACHE = `yireh-hw-site-${VERSION}`;
 const CDN_CACHE = 'yireh-cdn-v1';
 const PRECACHE = [
@@ -14,11 +16,11 @@ const PRECACHE = [
   "index.html",
   "drill.html",
   "stage.html",
-  "assets/stage-data.js?v=202610010714",
+  "assets/stage-data.js?v=202610011223",
   "manifest.webmanifest",
-  "assets/quiz.css?v=202610010714",
-  "assets/quiz.js?v=202610010714",
-  "assets/drill-data.js?v=202610010714",
+  "assets/quiz.css?v=202610011223",
+  "assets/quiz.js?v=202610011223",
+  "assets/drill-data.js?v=202610011223",
   "assets/yireh-math-wide.svg",
   "icons/app-192.png",
   "icons/app-512.png",
@@ -50,7 +52,7 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin === self.location.origin) event.respondWith(networkFirst(req));
+  if (url.origin === self.location.origin) event.respondWith(url.searchParams.has('v') ? versionedFirst(req) : networkFirst(req));
   else if (/fonts\.(googleapis|gstatic)\.com$|cdn\.jsdelivr\.net$/.test(url.hostname)) event.respondWith(cacheFirst(req));
 });
 
@@ -83,6 +85,12 @@ async function networkFirst(req) {
       return Response.error();
     }
   }
+}
+
+// ?v=버전 이 붙은 파일: 같은 버전 저장본이 있으면 인터넷을 기다리지 않음. 없으면 평소처럼 인터넷 먼저
+async function versionedFirst(req) {
+  const saved = await (await caches.open(SITE_CACHE)).match(req);
+  return saved || networkFirst(req);
 }
 
 async function cacheFirst(req) {
