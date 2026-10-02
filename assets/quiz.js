@@ -1121,6 +1121,8 @@
     const left = draftsLeft();
     const msg = STAGE && tab === 'practice' && !retrying
       ? (right >= PASS ? `통과했어요! ${'★'.repeat(stars(right))}${nextLevel() ? ' 다음 단계가 열렸어요.' : STAGES.at(-1).id === track ? ' 마지막 단계까지 왔어요!' : ''}` : `${PASS}문제 이상 맞혀야 통과예요. 해설을 읽고 다시 도전해 봐요!`)
+      : STAGE && tab === 'practice' && retrying
+        ? ((stageBest()[track] || 0) >= PASS ? '틀린 문제까지 다 풀었어요! 이 단계는 통과했어요.' : `틀린 문제를 다시 풀었어요. 통과하려면 ‘새 10문제’에서 처음 채점할 때 ${PASS}문제 이상 맞혀야 해요.`)
       : right === deck.length ? '전부 맞혔어요!' : right / deck.length >= 0.7 ? '잘했어요. 틀린 문제를 한 번 더 풀어 봐요.' : '정답을 보고 다시 풀어 봐요.';
     const foot = graded
       ? `<div class="score"><span class="big">${right} / ${deck.length}${mark('ok')}</span><p>${msg}</p></div>
@@ -1188,11 +1190,13 @@
       : Number(String(value).replace(/,/g, '')) === q.ans;
   }
 
-  // 연산 연습: 이번 10문제에서 9개 이상 맞히면 다음 단계 버튼
+  // 다음 단계 버튼. 단계별 문제: 이 단계를 통과한 적이 있으면(최고 ${PASS}개 이상) 틀린 문제 다시 풀기 뒤에도 보여 줌
+  // 연산 연습: 이번 10문제에서 9개 이상 맞히면
   function nextLevel() {
-    if (!SHEET || tab !== 'practice' || retrying) return '';
+    if (!SHEET || tab !== 'practice') return '';
+    if (STAGE) { const i = STAGES.findIndex(x => x.id === track); return (stageBest()[track] || 0) >= PASS && i >= 0 && i < STAGES.length - 1 ? STAGES[i + 1].id : ''; }
+    if (retrying) return '';
     const right = results.filter(r => r && r.correct).length;
-    if (STAGE) { const i = STAGES.findIndex(x => x.id === track); return right >= PASS && i >= 0 && i < STAGES.length - 1 ? STAGES[i + 1].id : ''; }
     const op = opOf(track), i = op ? op.tracks.indexOf(track) : -1;
     return right >= Math.ceil(deck.length * 0.9) && i >= 0 && i < op.tracks.length - 1 ? op.tracks[i + 1] : '';
   }
