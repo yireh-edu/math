@@ -1,0 +1,50 @@
+/* 이레 수학 · DT 페이지 (quiz.css 위에 덧붙임) → hw-site/assets/dt.css */
+:root{ --dt-d:#2B4C8C; --dt-d-soft:#E8EDF7; --dt-t:#C8392B; --dt-t-soft:#FCEAE7; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --dt-d:#93B2F0; --dt-d-soft:#1C283C; --dt-t:#FF6B5D; --dt-t-soft:#3A201D; } }
+:root[data-theme="dark"]{ --dt-d:#93B2F0; --dt-d-soft:#1C283C; --dt-t:#FF6B5D; --dt-t-soft:#3A201D; }
+
+.badge.dt-badge-d{border-color:var(--dt-d); color:var(--dt-d)}
+.dt-search{flex-basis:100%; font:inherit; font-size:15px; padding:9px 12px; border:1px solid var(--line); border-radius:10px; background:var(--card); color:var(--ink); min-width:0}
+.dt-search:focus{outline:2px solid var(--sel); outline-offset:1px}
+.dt-list{display:grid; gap:12px}
+.dt-found{margin:0; color:var(--muted); font-size:14px}
+
+.dt-card{background:var(--card); border:1px solid var(--line); border-left:5px solid var(--dt-d); border-radius:14px; padding:14px 16px; display:grid; gap:8px; scroll-margin:24px}
+.dt-card.is-t{border-left-color:var(--dt-t)}
+.dt-card.focus{box-shadow:0 0 0 3px var(--sel)}
+.dt-head{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.dt-id{font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--muted)}
+.dt-kind{font-size:12px; font-weight:600; border-radius:999px; padding:1px 9px; background:var(--dt-d-soft); color:var(--dt-d)}
+.is-t .dt-kind{background:var(--dt-t-soft); color:var(--dt-t)}
+.dt-name{font-size:17px}
+.dt-known{margin-left:auto; font-size:12px; color:var(--muted)}
+.dt-text{margin:0; font-size:16px; line-height:1.7; word-break:keep-all; overflow-wrap:anywhere}
+.dt-app{margin:0; font-size:14px; color:var(--muted); word-break:keep-all}
+.dt-app b{color:var(--ink); font-weight:600; margin-right:4px}
+.dt-meta{display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; font-size:13px}
+.dt-lbl{color:var(--muted); width:58px; flex:none}
+.dt-pres{display:flex; flex-wrap:wrap; gap:6px; flex:1; min-width:0}
+.dt-pre{font:inherit; font-size:13px; border:1px solid var(--line); background:var(--paper); color:var(--sel); border-radius:999px; padding:2px 10px; cursor:pointer}
+.dt-pre:hover{border-color:var(--sel)}
+.dt-none{color:var(--muted)}
+.dt-std{color:var(--muted); font-variant-numeric:tabular-nums}
+
+.dt-memo{border-left:5px solid var(--dt-d)}
+.dt-memo.is-t{border-left-color:var(--dt-t)}
+.dt-memo .dt-left{margin-left:auto; font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums}
+.dt-ask{margin:0; color:var(--muted); font-size:15px}
+.dt-front{margin:0; font-family:var(--hand); font-size:40px; line-height:1.2}
+.dt-blank{display:inline-block; min-width:4.5em; text-align:center; border-bottom:2px solid var(--pen); color:var(--pen); font-weight:600; margin:0 2px}
+.dt-answer .dt-card{border-left-width:1px}
+.dt-actions{display:flex; gap:10px; flex-wrap:wrap}
+.dt-done{align-items:flex-start}
+.dt-done p{margin:0}
+.dt-done-big{font-family:var(--hand); font-size:36px; line-height:1.2}
+.dt-tip{color:var(--muted); font-size:14px}
+
+.dt-book{display:grid; gap:10px}
+.dt-book h2{margin:6px 0 0; font-size:18px}
+.dt-book h2 .n{font-size:13px; color:var(--muted); font-weight:500; margin-left:6px}
+.dt-bar{height:6px; border-radius:999px; background:var(--line); overflow:hidden}
+.dt-bar span{display:block; height:100%; background:var(--pen)}
+.chips.levels .chip.dt-chip .n{margin:0 0 0 6px}
