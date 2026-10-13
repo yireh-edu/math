@@ -116,6 +116,14 @@
   const orderPicks = new Map();   // 단어 배열: 문제마다 지금까지 누른 카드
   if (!HW && CFG.grade) save('last-grade', CFG.grade);
 
+  // DT 카드 바로 가기: 문제·개념의 dt = ['M1-T10'] 또는 [{ id, n:이름 }]. CFG.dtPage(예: 'dt.html')가 있을 때만
+  function dtLinksHTML(list, label) {
+    if (!CFG.dtPage || !list || !list.length) return '';
+    return `<div class="dt-links"><span class="k">${label}</span>${list.map(x => {
+      const id = typeof x === 'string' ? x : x.id, n = typeof x === 'string' ? '' : x.n || '';
+      return `<a class="dt-pre" href="${CFG.dtPage}#${encodeURIComponent(id)}">${esc(id)}${n ? ' ' + esc(n) : ''}</a>`;
+    }).join('')}</div>`;
+  }
   function texSafe(v) { return typeof v === 'string' && CFG.math ? v.replace(/\$[^$]*\$/g, m => m.replace(/</g, '\\lt ').replace(/>/g, '\\gt ')) : v; }
   function esc(s) { return String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch])); }
   function fmtChoice(c) { return CFG.math && /^[-\d.\s]+$/.test(c) ? `$${c}$` : c; }
@@ -157,7 +165,7 @@
   }
   function buildInner(item, i, rand, dirHint) {
     const src = `${poolKey()}#${i}`;
-    const base = { src, cat: item.cat || (track === 'bible' ? '성경' : ''), unit: item.unit || '', kind: item.kind || '' };
+    const base = { src, cat: item.cat || (track === 'bible' ? '성경' : ''), unit: item.unit || '', kind: item.kind || '', dt: item.dt || [] };
     if (item.t === 'mc') {
       return { ...base, type: 'mc', q: item.q, choices: item.c.map(fmtChoice), ans: item.a, sol: item.sol || '', kind: base.kind || '5지선다' };
     }
@@ -905,6 +913,7 @@
         ${open ? `<div class="c-main">${conceptBodyHTML(c)}
           ${(c.examples || []).map((ex, k) => exampleHTML(ex, `${ci}-${k}`, false)).join('')}
           ${checkHTML(c, String(ci))}
+          ${dtLinksHTML(c.dt, '이 개념의 DT 카드')}
           <div class="row"><button class="btn ghost" type="button" data-present="${ci}">${PRESENT_ICON}이 개념 크게 보기</button></div></div>` : ''}
       </article>`;
     }).join('')}</div>`;
@@ -1027,6 +1036,7 @@
     const feedback = done ? `
       <p class="verdict ${res.correct ? 'ok' : ''}" role="status">${verdict}</p>
       ${q.type === 'open' ? '' : `<div class="sol"><span class="k">해설</span>${q.sol || '해설이 없어요.'}</div>`}
+      ${res.correct ? '' : dtLinksHTML(q.dt, '다시 볼 DT')}
       <div class="row">${q.sayAfter ? sayButton(q.sayAfter, q.sayLabel) : ''}<button class="btn" type="button" data-act="next" id="next-btn">${last ? '결과 보기' : '다음 문제 →'}</button></div>` : '';
     const meta = [q.cat ? `<span>${esc(q.cat)}</span>` : '', q.unit ? `<span>${q.cat ? '· ' : ''}${esc(q.unit)}</span>` : '',
       `<span class="tag${track === 'bible' ? ' bible' : ''}">${esc(q.kind)}</span>`].join('');
@@ -1154,7 +1164,7 @@
     } else {
       body = `<div class="ws-short"><input class="ws-in" data-ws="${i}" inputmode="${q.text ? 'text' : 'decimal'}" autocomplete="off" aria-label="${i + 1}번 답" placeholder="답" value="${esc(r ? r.picked : d)}" ${r ? 'disabled' : ''}>${r || q.text || (STAGES.find(x => x.id === track) || {}).part === '초등' ? '' : `<button class="btn ghost" type="button" data-ws-neg="${i}" aria-label="음수 부호 넣기/빼기">±</button>`}</div>`;
     }
-    const fb = r && !r.correct ? `<div class="sol"><span class="k">정답 ${q.type === 'mc' ? LABELS.at(q.ans) : esc(q.answerText || [].concat(q.ans)[0])}</span>${q.sol || ''}</div>` : '';
+    const fb = r && !r.correct ? `<div class="sol"><span class="k">정답 ${q.type === 'mc' ? LABELS.at(q.ans) : esc(q.answerText || [].concat(q.ans)[0])}</span>${q.sol || ''}</div>${dtLinksHTML(q.dt, '다시 볼 DT')}` : '';
     return `<li class="ws-item${r ? (r.correct ? ' ok' : ' no') : ''}">
       <div class="qhead"><div class="qnum">${i + 1}${r ? mark(r.correct ? 'ok' : 'no') : ''}</div>
         <div><div class="meta"><span class="tag">${esc(q.kind)}</span></div><p class="qtext">${q.q}</p></div>

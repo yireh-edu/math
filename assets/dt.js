@@ -19,6 +19,9 @@
   function today() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
 
   let course = load('course', COURSES.length ? COURSES[0].id : '');
+  // dt.html?c=M1 처럼 과정을 정해서 열 수 있음 (이레 학년 페이지의 'DT 카드' 버튼)
+  const qc = new URLSearchParams(location.search).get('c');
+  if (qc && COURSES.some(c => c.id === qc)) { course = qc; save('course', course); }
   if (!COURSES.some(c => c.id === course)) course = COURSES.length ? COURSES[0].id : '';
   let tab = load('tab', 'learn');
   if (!['learn', 'memo', 'book'].includes(tab)) tab = 'learn';
