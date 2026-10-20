@@ -83,6 +83,9 @@
   // ── 저장 (학생 브라우저) ──
   function load(name, fallback) { try { return JSON.parse(localStorage.getItem(`${KEY}-${name}`)) ?? fallback; } catch { return fallback; } }
   function save(name, value) { try { localStorage.setItem(`${KEY}-${name}`, JSON.stringify(value)); } catch {} }
+  // 학습 기록을 이레 서버로 (카카오로 로그인한 학생만, gate.js의 IRAE_AUTH가 모아 두었다가 보냄)
+  const SUBJ = { math: '수학', english: '영어' }[CFG.subject] || '';
+  function report(ev) { try { if (window.IRAE_AUTH) window.IRAE_AUTH.send(ev); } catch {} }
 
   // ── 상태 ──
   const month = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', month: 'numeric' }).format(new Date()));
@@ -1182,6 +1185,11 @@
       if (!retrying || correct) correct ? wrong.delete(q.src) : wrong.add(q.src);
     });
     save('wrong', [...wrong]);
+    if (!retrying && tab === 'practice' && (STAGE || DRILL)) {
+      const right = results.filter(x => x && x.correct).length;
+      if (STAGE) { const st = STAGES.find(x => x.id === track); report({ kind: 'stage', ref: track, title: `${track} ${st ? st.title : TRACK_LABEL[track] || ''}`, right, total: deck.length, data: { pass: right >= PASS } }); }
+      else { const op = opOf(track); report({ kind: 'drill', ref: track, title: `${op ? op.label + ' ' : ''}${TRACK_LABEL[track] || track}`, right, total: deck.length }); }
+    }
     if (STAGE && tab === 'practice' && !retrying) {
       // 단계 기록: 가장 많이 맞힌 개수
       const best = stageBest(), right = results.filter(x => x && x.correct).length;
@@ -1256,6 +1264,8 @@
       if (!retrying && deck.every((_, i) => results.at(i)) && !done[hwId]) {
         done[hwId] = { at: new Date().toISOString() };
         save('done', done);
+        const hs = hwSet();
+        report({ kind: 'homework', ref: hwId, title: hs ? (hs.title || hs.label || hwId) : hwId, right: results.filter(r => r && r.correct).length, total: deck.length });
       }
       stash();
       renderDay(); renderStage();
@@ -1269,6 +1279,7 @@
       const done = doneMap();
       done[`${poolKey()}|${view}`] = { right: results.filter(r => r.correct).length, total: deck.length };
       save('done', done);
+      report({ kind: 'set', ref: `${CFG.subject}|${CFG.grade || ''}|${track}|${view}`, title: `${SUBJ} ${GRADE_LABEL[CFG.grade] || ''} ${TRACK_LABEL[track] || ''} · ${WEEK ? '이번 주' : '오늘'}(${view}) 문제`.replace(/\s+/g, ' ').trim(), right: done[`${poolKey()}|${view}`].right, total: deck.length });
     }
     stash();
     renderTabs(); renderDay(); renderStage();
