@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Nanum+Pen+Script&display=swap">
-<link rel="stylesheet" href="assets/quiz.css?v=202610200939">
-<link rel="preload" href="assets/quiz.js?v=202610200939" as="script">
+<link rel="stylesheet" href="assets/quiz.css?v=202610211159">
+<link rel="preload" href="assets/quiz.js?v=202610211159" as="script">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#C8392B">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/app-192.png">
@@ -25,6 +25,7 @@
 #gate button,#irae-join button{width:100%;font-size:17px;padding:12px;border:0;border-radius:12px;background:#18212E;color:#fff;cursor:pointer}
 #gate .err,#irae-join .err{color:#C8392B;min-height:1.4em;margin:10px 0 0;font-size:14px}
 #gate .kakao,#irae-join .kakao,.irae-acc .kakao{background:#FEE500;color:#191919;font-weight:700}
+#gate .gart{display:block;width:132px;height:auto;margin:-8px auto 4px}
 #gate .or{display:flex;align-items:center;gap:10px;color:#8A94A3;font-size:13px;margin:16px 0}#gate .or:before,#gate .or:after{content:'';flex:1;border-top:1px solid #DDE3EA}
 #irae-join{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(10,14,20,.45);font-family:'IBM Plex Sans KR',system-ui,sans-serif}
 #irae-join .later{background:transparent;color:#5B6675;font-size:15px;margin-top:6px}
@@ -161,7 +162,7 @@
   document.documentElement.classList.add('gated');
   function show() {
     var g = document.createElement('div'); g.id = 'gate';
-    g.innerHTML = '<form><h2>이레</h2><p>카카오로 시작하거나<br>선생님께 받은 반 코드를 넣어 주세요.</p>' +
+    g.innerHTML = '<form>' + (window.IRAE_GATE_ART ? '<img class="gart" src="' + window.IRAE_GATE_ART + '" alt="">' : '') + '<h2>이레</h2><p>카카오로 시작하거나<br>선생님께 받은 반 코드를 넣어 주세요.</p>' +
       '<button type="button" class="kakao">카카오로 시작하기</button><div class="or">또는</div>' +
       '<input type="password" inputmode="numeric" autocomplete="off" aria-label="반 코드" maxlength="12"><button type="submit">반 코드로 들어가기</button><p class="err" role="alert">' + (loginErr ? '카카오 로그인이 안 됐어요. 다시 해 주세요.' : '') + '</p></form>';
     document.body.appendChild(g);
@@ -369,8 +370,8 @@
 <body>
 <div class="wrap" id="app"></div>
 <script>window.QUIZ_CONFIG = {"mode":"drill","subject":"drill","title":"이레 수학 연산 연습","math":false,"speech":false,"home":"index.html","homeLabel":"← 숙제로","logo":"assets/yireh-math-wide.svg","logoText":"이레 수학","eyebrow":"덧셈 · 뺄셈 · 곱셈 · 나눗셈","links":[{"href":"dt.html","label":"DT 카드 · 정의와 정리 →"},{"href":"stage.html","label":"단계별 문제 →"}],"lead":"연산과 단계를 고르고 10문제를 다 쓴 뒤 ‘채점하기’를 눌러요. 9문제 이상 맞히면 다음 단계로 올라가요. 틀린 문제는 오답노트에 모여요.","footer":"답 칸에서 Enter를 누르면 다음 칸으로 가요 · 연필 버튼으로 연습장에 풀어 볼 수 있어요"};</script>
-<script src="assets/drill-data.js?v=202610200939"></script>
-<script src="assets/quiz.js?v=202610200939"></script>
+<script src="assets/drill-data.js?v=202610211159"></script>
+<script src="assets/quiz.js?v=202610211159"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(function () {});
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});
