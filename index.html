@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Nanum+Pen+Script&display=swap">
-<link rel="stylesheet" href="assets/quiz.css?v=202610211159">
-<link rel="preload" href="assets/quiz.js?v=202610211159" as="script">
+<link rel="stylesheet" href="assets/quiz.css?v=202610260857">
+<link rel="preload" href="assets/quiz.js?v=202610260857" as="script">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#C8392B">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/app-192.png">
@@ -369,7 +369,7 @@
 </head>
 <body>
 <div class="wrap" id="app"></div>
-<script>window.QUIZ_CONFIG = {"mode":"homework","dtPage":"dt.html","title":"이레 수학","math":true,"speech":false,"home":false,"logo":"assets/yireh-math-wide.svg","logoText":"이레 수학","eyebrow":"선생님이 올린 이번 주 수학 숙제","lead":"정해진 순서대로 풀고, 다 풀면 결과를 선생님께 보내요. 푼 곳까지 저장돼서 나중에 이어서 풀 수 있어요.","links":[{"href":"dt.html","label":"DT 카드 · 정의와 정리 →"},{"href":"stage.html","label":"단계별 문제 →"},{"href":"drill.html","label":"+ − × ÷ 연산 연습 →"}],"footer":"연습장 버튼으로 손으로 풀어 볼 수 있어요 · 숙제는 선생님이 올릴 때마다 바뀌어요<br>휴대폰 앱처럼 쓰기 · 아이폰: 사파리 공유 → ‘홈 화면에 추가’ · 갤럭시: 크롬 메뉴(⋮) → ‘앱 설치’"};</script>
+<script>window.QUIZ_CONFIG = {"mode":"homework","dtPage":"dt.html","practicePage":"practice.html","title":"이레 수학","math":true,"speech":false,"home":false,"logo":"assets/yireh-math-wide.svg","logoText":"이레 수학","eyebrow":"선생님이 올린 이번 주 수학 숙제","lead":"정해진 순서대로 풀고, 다 풀면 결과를 선생님께 보내요. 푼 곳까지 저장돼서 나중에 이어서 풀 수 있어요.","links":[{"href":"dt.html","label":"DT 카드 · 정의와 정리 →"},{"href":"stage.html","label":"단계별 문제 →"},{"href":"drill.html","label":"+ − × ÷ 연산 연습 →"}],"footer":"연습장 버튼으로 손으로 풀어 볼 수 있어요 · 숙제는 선생님이 올릴 때마다 바뀌어요<br>휴대폰 앱처럼 쓰기 · 아이폰: 사파리 공유 → ‘홈 화면에 추가’ · 갤럭시: 크롬 메뉴(⋮) → ‘앱 설치’"};</script>
 <script>
 window.MathJax = { tex: { inlineMath: [['$', '$']] }, svg: { fontCache: 'global' },
   startup: { typeset: false, ready() { MathJax.startup.defaultReady(); MathJax.startup.promise.then(function () { window.IRAE_READY && window.IRAE_READY(); }); } } };
@@ -382,7 +382,7 @@ window.MathJax = { tex: { inlineMath: [['$', '$']] }, svg: { fontCache: 'global'
   hw.src = 'current.js?t=' + Date.now();
   hw.onload = hw.onerror = function () {
     var app = document.createElement('script');
-    app.src = 'assets/quiz.js?v=202610211159';
+    app.src = 'assets/quiz.js?v=202610260857';
     document.body.appendChild(app);
   };
   document.body.appendChild(hw);

@@ -4,7 +4,10 @@
  *   배우기: 과정별 DT 카드. 앞 DT를 누르면 그 카드로 감
  *   외우기: 카드를 보고 떠올린 뒤 [정답 보기] → [알았어요]/[다시 볼래요]. 다시 볼 카드는 뒤로 돌아옴
  *   이레 DT집: 외운 카드 모아 보기
+ *   익히기 길: 앞 DT 순서대로 한 장씩 — 배우기 → 외우기 → 문제로 익히기(practice.html, 80% 이상) → 다음 카드가 열림.
+ *             익힌 카드가 모이면 섞어 풀기(처음 보는 꼴에도 꺼내 쓰기)
  * 기록: localStorage 'irae-dt-known' = { 카드번호: 외운 날 }, 'irae-dt-course', 'irae-dt-tab'
+ *       문제로 익힌 기록은 DT 연습 화면이 'irae-dtp-stage-best' = { 카드번호: 가장 많이 맞힌 수 } 에 둠
  */
 (function () {
   const CFG = window.QUIZ_CONFIG || {};
@@ -23,8 +26,11 @@
   const qc = new URLSearchParams(location.search).get('c');
   if (qc && COURSES.some(c => c.id === qc)) { course = qc; save('course', course); }
   if (!COURSES.some(c => c.id === course)) course = COURSES.length ? COURSES[0].id : '';
-  let tab = load('tab', 'learn');
-  if (!['learn', 'memo', 'book'].includes(tab)) tab = 'learn';
+  let tab = load('tab', 'path');
+  if (!['path', 'learn', 'memo', 'book'].includes(tab)) tab = 'path';
+  // dt.html?next=E1 : DT 연습을 마치고 돌아오면 그 학년의 익히기 길로
+  const qn = new URLSearchParams(location.search).get('next');
+  if (qn !== null) { tab = 'path'; save('tab', tab); if (COURSES.some(c => c.id === qn)) { course = qn; save('course', course); } }
   let query = '';
   let focusId = '';
   // 외우기 진행 (새로고침해도 이어서)
@@ -32,6 +38,19 @@
   const known = () => load('known', {});
   const cur = () => COURSES.find(c => c.id === course);
   const KIND = { D: '정의', T: '정리' };
+  // ── 익힘: 외웠고, 풀 문제가 있으면 DT 연습에서 80% 이상 맞힌 적이 있음 (practice.html 과 같은 기준) ──
+  const COUNTS = window.DT_COUNTS || {};
+  const PRACTICE = CFG.practicePage || 'practice.html';
+  const countOf = id => COUNTS[id] || 0;
+  const passOf = id => Math.ceil(Math.min(10, countOf(id)) * 0.8);
+  function bestOf(id) { try { return (JSON.parse(localStorage.getItem('irae-dtp-stage-best')) || {})[id] || 0; } catch (e) { return 0; } }
+  const solved = id => !countOf(id) || bestOf(id) >= passOf(id);
+  const mastered = id => !!known()[id] && solved(id);
+  // 열림: 같은 학년 안의 앞 DT를 모두 익힘 (다른 학년의 앞 DT는 그 학년 길에서)
+  const isOpen = it => it.pre.every(p => !BY_ID.has(p) || BY_ID.get(p).course !== it.course || mastered(p));
+  const stateOf = it => mastered(it.id) ? 'done' : !isOpen(it) ? 'lock' : known()[it.id] ? 'solve' : 'learn';
+  const nextCard = c => c.items.find(it => stateOf(it) === 'learn' || stateOf(it) === 'solve');
+  const practiceBtn = (it, cls = 'ghost') => countOf(it.id) ? `<a class="btn ${cls} small" href="${PRACTICE}?dt=${encodeURIComponent(it.id)}">문제로 익히기 (${countOf(it.id)}문제)${solved(it.id) && bestOf(it.id) ? ' ✓' : ''}</a>` : '';
 
   // ── 외우기 빈칸: 정의 카드는 정의하는 말(이름의 낱말)을 문장에서 비움 ──
   function blankTerms(it) {
@@ -61,11 +80,12 @@
   function cardHTML(it, opts = {}) {
     const k = known()[it.id];
     return `<article class="dt-card ${it.k === 'D' ? 'is-d' : 'is-t'}${it.id === focusId ? ' focus' : ''}" id="dt-${esc(it.id)}">
-      <div class="dt-head"><span class="dt-id">${esc(it.id)}</span><span class="dt-kind">${KIND[it.k]}</span><strong class="dt-name">${esc(it.name)}</strong>${k ? '<span class="dt-known" title="외운 카드">외움 ✓</span>' : ''}</div>
+      <div class="dt-head"><span class="dt-id">${esc(it.id)}</span><span class="dt-kind">${KIND[it.k]}</span><strong class="dt-name">${esc(it.name)}</strong>${mastered(it.id) ? '<span class="dt-known dt-mastered" title="외우고 문제로 익힌 카드">익힘 ✓</span>' : k ? '<span class="dt-known" title="외운 카드">외움 ✓</span>' : ''}</div>
       <p class="dt-text">${esc(it.text)}</p>
       ${it.app ? `<p class="dt-app"><b>적용</b> ${esc(it.app)}</p>` : ''}
       ${opts.compact ? '' : `<div class="dt-meta"><span class="dt-lbl">앞 DT</span><div class="dt-pres">${preLinks(it)}</div></div>
       <div class="dt-meta"><span class="dt-lbl">성취기준</span><span class="dt-std">${it.std.map(s => esc(s)).join(', ')}</span></div>`}
+      ${opts.compact ? '' : `<div class="dt-actions dt-card-acts">${practiceBtn(it)}</div>`}
       ${opts.unknow ? `<button class="btn ghost small" type="button" data-unknow="${esc(it.id)}">다시 외우기로 보내기</button>` : ''}
     </article>`;
   }
@@ -79,7 +99,7 @@
         <div class="chips levels ops">${PARTS.map(p => `<button class="chip" type="button" data-part="${esc(p)}" aria-pressed="${p === c.part}">${esc(p)}</button>`).join('')}</div></div>
       <div class="pick-row"><span class="lbl">학년</span>
         <div class="chips levels">${COURSES.filter(x => x.part === c.part).map(x => {
-          const n = x.items.filter(it => kn[it.id]).length;
+          const n = x.items.filter(it => mastered(it.id)).length;
           return `<button class="chip dt-chip" type="button" data-course="${x.id}" aria-pressed="${x.id === course}">${esc(x.label)}<span class="n">${n}/${x.items.length}</span></button>`;
         }).join('')}</div></div>`;
   }
@@ -88,13 +108,18 @@
     const kn = known();
     const left = c.items.filter(it => !kn[it.id]).length;
     const all = Object.keys(kn).filter(id => BY_ID.has(id)).length;
-    const tabs = [['learn', '배우기', c.items.length], ['memo', '외우기', left], ['book', '이레 DT집', all]];
+    const tabs = [['path', '익히기 길', `${c.items.filter(it => mastered(it.id)).length}/${c.items.length}`], ['learn', '배우기', c.items.length], ['memo', '외우기', left], ['book', '이레 DT집', all]];
     $('#tabs').innerHTML = tabs.map(([k, name, n]) => `<button class="chip" type="button" data-tab="${k}" aria-pressed="${k === tab}">${name}<span class="n">${n}</span></button>`).join('');
   }
   function renderDay() {
     const c = cur(); if (!c) { $('#day').innerHTML = ''; return; }
     const d = c.items.filter(i => i.k === 'D').length, t = c.items.length - d;
-    if (tab === 'learn') {
+    if (tab === 'path') {
+      const m = c.items.filter(it => mastered(it.id)).length;
+      $('#day').innerHTML = `<span class="date">${esc(c.label)} 익히기 길</span><span class="badge">익힌 카드 ${m} / ${c.items.length}</span>
+        <p class="sub">앞 DT부터 한 장씩 익혀요. 한 장은 <b>배우기 → 외우기 → 문제로 익히기</b> 순서예요. 문제를 ${'80%'} 이상 맞히면 익힌 카드가 되고, 그 카드를 앞 DT로 쓰는 다음 카드가 열려요.</p>
+        <div class="dt-bar" aria-hidden="true"><span style="width:${Math.round(m / c.items.length * 100)}%"></span></div>`;
+    } else if (tab === 'learn') {
       $('#day').innerHTML = `<span class="date">${esc(c.label)} DT</span><span class="badge dt-badge-d">정의 ${d}</span><span class="badge">정리 ${t}</span>
         <p class="sub"><b>정의(D)</b>는 증명하지 않는 약속, <b>정리(T)</b>는 앞 DT로 증명할 수 있는 참인 문장이에요. 카드를 소리 내어 읽고, 그림을 그려 가며 배워요. 모르는 말은 ‘앞 DT’를 눌러 먼저 봐요.</p>
         <input class="dt-search" id="dt-search" type="search" placeholder="번호나 이름으로 찾기 (예: M2-T22, 피타고라스)" value="${esc(query)}" aria-label="DT 찾기">`;
@@ -106,6 +131,37 @@
       $('#day').innerHTML = `<span class="date">이레 DT집</span>
         <p class="sub">외우기에서 ‘알았어요’를 누른 카드가 모여요. 학년마다 모은 카드를 다시 읽어 보세요.</p>`;
     }
+  }
+
+  // ── 익히기 길 ──
+  const STATE_TXT = { done: '익힘 ✓', solve: '문제로 익히기', learn: '배울 차례', lock: '잠김' };
+  function pathHTML() {
+    const c = cur(), nx = nextCard(c);
+    const mixN = c.items.filter(it => mastered(it.id) && countOf(it.id)).length;
+    let top;
+    if (!nx) top = `<div class="card dt-next done"><p class="dt-done-big">${esc(c.label)} DT를 모두 익혔어요!</p>
+      <p>이제 섞어 풀기로 처음 보는 꼴의 문제에도 꺼내 써 봐요.</p>
+      <div class="dt-actions">${mixN ? `<a class="btn" href="${PRACTICE}?mix=${c.id}">섞어 풀기</a>` : ''}${COURSES[COURSES.indexOf(c) + 1] ? `<button class="btn ghost" type="button" data-course="${COURSES[COURSES.indexOf(c) + 1].id}">다음 학년: ${esc(COURSES[COURSES.indexOf(c) + 1].label)} →</button>` : ''}</div></div>`;
+    else {
+      const st = stateOf(nx), kn = !!known()[nx.id];
+      top = `<div class="card dt-next ${nx.k === 'D' ? 'is-d' : 'is-t'}"><p class="dt-next-lbl">다음 할 것</p>
+        ${cardHTML(nx, { compact: true })}
+        <ol class="dt-steps">
+          <li class="${'done'}">① 배우기 — 카드를 소리 내어 읽고, 예를 하나 떠올려 봐요.</li>
+          <li class="${kn ? 'done' : 'now'}">② 외우기 — 카드를 안 보고 말해 봐요. ${kn ? '✓' : ''}</li>
+          <li class="${st === 'solve' ? 'now' : ''}">③ 문제로 익히기 — ${countOf(nx.id) ? `${countOf(nx.id) > 10 ? `${countOf(nx.id)}문제 중 10문제를 풀고` : `${countOf(nx.id)}문제를 모두 풀고`} ${passOf(nx.id)}문제 이상 맞히면 익힘` : '아직 문제가 없어서 외우면 익힘이에요'}</li>
+        </ol>
+        <div class="dt-actions">${kn ? '' : `<button class="btn" type="button" data-memo-one="${esc(nx.id)}">외우기</button>`}${countOf(nx.id) ? `<a class="btn${kn ? '' : ' ghost'}" href="${PRACTICE}?dt=${encodeURIComponent(nx.id)}">문제로 익히기</a>` : ''}
+          ${mixN >= 2 ? `<a class="btn ghost" href="${PRACTICE}?mix=${c.id}">익힌 것 섞어 풀기 (${mixN}장)</a>` : ''}</div></div>`;
+    }
+    const rows = c.items.map(it => {
+      const st = stateOf(it);
+      return `<li class="dt-path-row st-${st}${nx && it.id === nx.id ? ' is-next' : ''}">
+        <span class="dt-path-k ${it.k === 'D' ? 'is-d' : 'is-t'}">${it.k}</span>
+        <button class="dt-path-name" type="button" data-go="${esc(it.id)}"${st === 'lock' ? ' title="앞 DT를 먼저 익혀요"' : ''}><span class="dt-id">${esc(it.id)}</span> ${esc(it.name)}</button>
+        <span class="dt-path-st">${STATE_TXT[st]}</span></li>`;
+    }).join('');
+    return `${top}<ol class="dt-path">${rows}</ol>`;
   }
 
   // ── 배우기 ──
@@ -133,7 +189,7 @@
         <p class="dt-done-big">${left ? '오늘 외우기를 마쳤어요!' : `${esc(cur().label)} DT를 모두 외웠어요!`}</p>
         <p>이번에 외운 카드 ${memo.done.length}장${again.length ? ` · 다시 본 카드 ${again.length}장` : ''}</p>
         ${pres.length ? `<p class="dt-tip">자꾸 막히는 카드는 앞 DT부터 다시 봐요:</p><div class="dt-pres">${pres.map(p => `<button class="dt-pre" type="button" data-go="${esc(p)}">${esc(p)} ${esc(BY_ID.get(p).name)}</button>`).join('')}</div>` : ''}
-        <div class="dt-actions">${left ? '<button class="btn" type="button" data-act="memo-restart">남은 카드 다시 외우기</button>' : ''}<button class="btn ghost" type="button" data-tab="book">이레 DT집 보기</button></div>
+        <div class="dt-actions">${memo.one ? `<button class="btn" type="button" data-tab="path">익히기 길로 →</button>` : ''}${left && !memo.one ? '<button class="btn" type="button" data-act="memo-restart">남은 카드 다시 외우기</button>' : ''}<button class="btn ghost" type="button" data-tab="book">이레 DT집 보기</button></div>
       </div>`;
     }
     const it = BY_ID.get(memo.queue[0]);
@@ -164,7 +220,7 @@
   function renderStage() {
     const st = $('#stage');
     if (!cur()) { st.innerHTML = ''; return; }
-    st.innerHTML = tab === 'learn' ? learnHTML() : tab === 'memo' ? memoHTML() : bookHTML();
+    st.innerHTML = tab === 'path' ? pathHTML() : tab === 'learn' ? learnHTML() : tab === 'memo' ? memoHTML() : bookHTML();
     if (focusId) {
       const el = document.getElementById('dt-' + focusId);
       if (el) el.scrollIntoView({ block: 'center' });
@@ -196,6 +252,7 @@
     }
     if (act === 'memo-again') { const id = memo.queue.shift(); memo.queue.push(id); memo.again.push(id); memo.shown = false; save('memo', memo); renderAll(); return; }
     if (act === 'memo-restart') { newMemo(); renderAll(); return; }
+    if (b.dataset.memoOne) { memo = { course, queue: [b.dataset.memoOne], shown: false, done: [], again: [], one: true }; save('memo', memo); tab = 'memo'; save('tab', tab); renderAll(); window.scrollTo({ top: $('#tabs').offsetTop - 12 }); return; }
   });
   document.addEventListener('input', e => {
     if (e.target.id !== 'dt-search') return;
@@ -228,5 +285,5 @@
   const hashId = decodeURIComponent(location.hash.slice(1));
   if (BY_ID.has(hashId)) go(hashId); else renderAll();
   window.addEventListener('hashchange', () => { const id = decodeURIComponent(location.hash.slice(1)); if (BY_ID.has(id)) go(id); });
-  window.DT_DEBUG = { known, memo: () => memo, blanked: id => blanked(BY_ID.get(id)), byId: id => BY_ID.get(id) };
+  window.DT_DEBUG = { known, memo: () => memo, blanked: id => blanked(BY_ID.get(id)), byId: id => BY_ID.get(id), mastered, stateOf: id => stateOf(BY_ID.get(id)), nextCard: () => nextCard(cur()), countOf };
 })();

@@ -405,3 +405,24 @@ button.dot.now{outline:2px solid var(--sel); outline-offset:2px}
 .dt-links .k{color:var(--muted); font-weight:600; margin-right:2px}
 .dt-pre{font:inherit; font-size:13px; border:1px solid var(--line); background:var(--paper); color:var(--sel); border-radius:999px; padding:2px 10px; cursor:pointer; text-decoration:none}
 .dt-pre:hover{border-color:var(--sel)}
+/* DT 꼬리표 (문제를 풀 때 늘 보임): D 정의는 파랑, T 정리는 주황. 누르면 카드 팝업 */
+.dt-chips{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:8px; font-size:13px}
+.dt-chips .k{color:var(--muted); font-weight:600; margin-right:2px; font-size:12px}
+.dtc{display:inline-flex; align-items:center; gap:5px; font:inherit; font-size:13px; padding:3px 10px 3px 4px; border-radius:999px; border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer; touch-action:manipulation}
+.dtc b{display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; font-size:11.5px; color:#fff}
+.dtc-D b{background:#2F6FD6} .dtc-T b{background:#E07A1F}
+.dtc:hover{border-color:var(--sel)}
+.dtp-head{flex-wrap:wrap; gap:8px}
+.dtp-head a{margin-left:auto; font-size:14px}
+.dtpop{position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(10,14,20,.45)}
+.dtpop-card{background:var(--card); color:var(--ink); border-radius:18px; padding:20px; width:100%; max-width:440px; max-height:calc(100vh - 32px); overflow:auto; border-top:6px solid #2F6FD6; box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.dtpop-card.is-t{border-top-color:#E07A1F}
+.dtpop-head{display:flex; gap:8px; align-items:center; font-size:13px; color:var(--muted)}
+.dtpop-id{font-weight:700; color:var(--ink)}
+.dtpop-kind{padding:1px 8px; border-radius:999px; color:#fff; background:#2F6FD6; font-size:12px}
+.dtpop-card.is-t .dtpop-kind{background:#E07A1F}
+.dtpop-card h3{margin:10px 0 6px; font-size:20px}
+.dtpop-text{font-size:16.5px; line-height:1.65; margin:0 0 10px}
+.dtpop-app{font-size:14px; color:var(--muted); line-height:1.55}
+.dtpop-card .row{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+.dtp-head .lbl{white-space:nowrap}

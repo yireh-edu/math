@@ -29,6 +29,9 @@
   const STAGES = STAGE ? (window.QUIZ_STAGES || []) : [];
   const SHEET = DRILL || STAGE;   // 10문제를 다 쓰고 [채점하기]로 한 번에 채점
   const PASS = 8;
+  // DT 연습(practice.html): 단계별 문제 화면을 빌려 고른 DT 카드의 문제만 풂. 문제가 10개보다 적으면 80% 이상이 통과
+  const PRACTICE = STAGE && !!CFG.practice;
+  const passN = () => PRACTICE ? Math.max(1, Math.ceil(Math.min(10, pool().length) * 0.8)) : PASS;
   const LOCK = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
   const POS = { v: 'v.', a: 'adj.', n: 'n.', ad: 'adv.' };
   const POS_KO = { v: '동사', a: '형용사', n: '명사', ad: '부사' };
@@ -127,6 +130,43 @@
       return `<a class="dt-pre" href="${CFG.dtPage}#${encodeURIComponent(id)}">${esc(id)}${n ? ' ' + esc(n) : ''}</a>`;
     }).join('')}</div>`;
   }
+  // 문제를 풀 때 늘 보이는 DT 꼬리표: D(정의)·T(정리) + 이름. 누르면 카드 내용이 팝업으로
+  function dtChipsHTML(list) {
+    if (!CFG.dtPage || !list || !list.length) return '';
+    return `<div class="dt-chips"><span class="k">이 문제의 정의·정리</span>${list.map(x => {
+      const id = typeof x === 'string' ? x : x.id, n = typeof x === 'string' ? '' : x.n || '', k = /-T\d/.test(id) ? 'T' : 'D';
+      return `<button class="dtc dtc-${k}" type="button" data-dtcard="${esc(id)}"><b>${k}</b>${n ? esc(n) : esc(id)}</button>`;
+    }).join('')}</div>`;
+  }
+  let dtData = null;
+  function loadDtData() {
+    if (window.DT_COURSES) return Promise.resolve(window.DT_COURSES);
+    if (dtData) return dtData;
+    dtData = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = CFG.dtData || 'assets/dt-data.js'; sc.onload = () => res(window.DT_COURSES || []); sc.onerror = rej; document.head.appendChild(sc); });
+    return dtData;
+  }
+  async function openDtCard(id) {
+    let card = null;
+    try { for (const c of await loadDtData()) for (const it of c.items) if (it.id === id) card = Object.assign({ label: c.label }, it); } catch (e) {}
+    closeDtCard();
+    const w = document.createElement('div'); w.className = 'dtpop'; w.id = 'dtpop';
+    const KIND = { D: '정의', T: '정리' };
+    w.innerHTML = `<div class="dtpop-card ${card && card.k === 'T' ? 'is-t' : 'is-d'}" role="dialog" aria-label="DT 카드">
+      ${card ? `<div class="dtpop-head"><span class="dtpop-id">${esc(card.id)}</span><span class="dtpop-kind">${KIND[card.k]}</span><span class="dtpop-lbl">${esc(card.label)}</span></div>
+      <h3>${esc(card.name)}</h3><p class="dtpop-text">${esc(card.text)}</p>${card.app ? `<p class="dtpop-app"><b>적용</b> ${esc(card.app)}</p>` : ''}`
+        : `<h3>${esc(id)}</h3><p>카드를 불러오지 못했어요.</p>`}
+      <div class="row">${CFG.practicePage && !(PRACTICE && track === id) ? `<a class="btn" href="${CFG.practicePage}?dt=${encodeURIComponent(id)}">이 DT 문제 더 풀기</a>` : ''}<a class="btn ghost" href="${CFG.dtPage}#${encodeURIComponent(id)}">카드에서 보기</a><button class="btn ghost" type="button" data-dtclose="1">닫기</button></div>
+    </div>`;
+    document.body.appendChild(w);
+    typeset(w);
+  }
+  function closeDtCard() { const w = document.getElementById('dtpop'); if (w) w.remove(); }
+  document.addEventListener('click', e => {
+    const c = e.target.closest && e.target.closest('[data-dtcard]');
+    if (c) { e.preventDefault(); e.stopPropagation(); openDtCard(c.dataset.dtcard); return; }
+    if (e.target.closest && (e.target.closest('[data-dtclose]') || e.target.id === 'dtpop')) { e.stopPropagation(); closeDtCard(); }
+  }, true);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDtCard(); });
   function texSafe(v) { return typeof v === 'string' && CFG.math ? v.replace(/\$[^$]*\$/g, m => m.replace(/</g, '\\lt ').replace(/>/g, '\\gt ')) : v; }
   function esc(s) { return String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch])); }
   function fmtChoice(c) { return CFG.math && /^[-\d.\s]+$/.test(c) ? `$${c}$` : c; }
@@ -756,6 +796,13 @@
   }
   function renderPicker() {
     if (HW) { renderHwPicker(); return; }
+    if (PRACTICE) {
+      const P = CFG.practice;
+      $('#picker').innerHTML = `<div class="pick-row dtp-head"><span class="lbl">${P.mix ? '섞어 풀기' : 'DT 연습'}</span>
+        <div class="dt-chips">${(P.cards || []).map(c => `<button class="dtc dtc-${c.k}" type="button" data-dtcard="${esc(c.id)}"><b>${c.k}</b>${esc(c.name)}</button>`).join('')}</div>
+        <a href="${CFG.dtPage}${P.back ? '#' + encodeURIComponent(P.back) : ''}">← DT 카드로</a></div>`;
+      return;
+    }
     if (STAGE) {
       const cur = STAGES.find(x => x.id === track) || STAGES[0];
       const parts = [...new Set(STAGES.map(x => x.part))], best = stageBest();
@@ -791,7 +838,7 @@
     if (HW) { $('#tabs').innerHTML = ''; return; }
     const wrong = new Set(load('wrong', []));
     const wrongN = [...pool().keys()].filter(i => wrong.has(`${poolKey()}#${i}`)).length;
-    const tabs = SHEET ? [['practice', '문제 풀기', 10], ['wrong', '오답노트', wrongN]]
+    const tabs = SHEET ? [['practice', '문제 풀기', PRACTICE ? Math.min(10, pool().length) : 10], ['wrong', '오답노트', wrongN]]
       : [...(conceptList().length ? [['concept', '개념', conceptList().length]] : []), ['period', `${PERIOD_NAME} 퀴즈`, periodSize()], ['practice', '연습', pool().length], ['wrong', '오답노트', wrongN]];
     $('#tabs').innerHTML = tabs.map(([k, name, n]) => `<button class="chip" type="button" data-tab="${k}" aria-pressed="${k === tab}">${name}<span class="n">${n}</span></button>`).join('');
   }
@@ -822,6 +869,10 @@
         ${done ? `<span class="badge">완료 ${done.right}/${done.total}</span>` : ''}
         ${s ? `<span class="streak">연속 ${s}${WEEK ? '주' : '일'}</span>` : ''}
         <p class="sub">${view === THIS_PERIOD ? `${who} ${PERIOD_NAME} ${deck.length}문제예요.` : `지난 ${WEEK ? '주' : '날'}의 문제예요. 놓친 ${WEEK ? '주' : '날'}를 채워 보세요.`}${pool().length < 20 ? ` 문제가 더 추가되면 한 번에 10문제씩 나와요.` : ''}</p>`;
+    } else if (PRACTICE && tab === 'practice') {
+      const n = Math.min(10, pool().length), b = stageBest()[track] || 0;
+      $('#day').innerHTML = `<span class="date">${esc(CFG.practice.title)}</span>${b ? `<span class="badge">최고 ${b} / ${n}${b >= passN() ? ' · 익힘 ✓' : ''}</span>` : ''}
+        <p class="sub">${pool().length ? `${pool().length > 10 ? `${pool().length}문제 중 10문제를 골라요.` : `${n}문제를 모두 풀어요.`} 다 풀고 ‘채점하기’를 누르세요. ${passN()}문제 이상 맞히면 이 ${CFG.practice.mix ? '묶음을' : 'DT를'} 익힌 거예요.` : '아직 이 DT의 문제가 없어요. 카드를 배우고 외우기로 익혀 주세요.'}</p>`;
     } else if (STAGE && tab === 'practice') {
       const st = STAGES.find(x => x.id === track), b = stageBest()[track] || 0;
       $('#day').innerHTML = `<span class="date">${STAGES.indexOf(st) + 1}단계 · ${esc(st.title)}</span>${b ? `<span class="badge">최고 ${b} / 10 ${'★'.repeat(stars(b))}</span>` : ''}
@@ -1039,14 +1090,13 @@
     const feedback = done ? `
       <p class="verdict ${res.correct ? 'ok' : ''}" role="status">${verdict}</p>
       ${q.type === 'open' ? '' : `<div class="sol"><span class="k">해설</span>${q.sol || '해설이 없어요.'}</div>`}
-      ${res.correct ? '' : dtLinksHTML(q.dt, '다시 볼 DT')}
       <div class="row">${q.sayAfter ? sayButton(q.sayAfter, q.sayLabel) : ''}<button class="btn" type="button" data-act="next" id="next-btn">${last ? '결과 보기' : '다음 문제 →'}</button></div>` : '';
     const meta = [q.cat ? `<span>${esc(q.cat)}</span>` : '', q.unit ? `<span>${q.cat ? '· ' : ''}${esc(q.unit)}</span>` : '',
       `<span class="tag${track === 'bible' ? ' bible' : ''}">${esc(q.kind)}</span>`].join('');
     return `<article class="card">
       <div class="qhead">
         <div class="qnum">${idx + 1}${done ? mark(res.correct ? 'ok' : 'no') : ''}</div>
-        <div><div class="meta">${meta}</div><p class="qtext">${q.q}</p></div>
+        <div><div class="meta">${meta}</div><p class="qtext">${q.q}</p>${dtChipsHTML(q.dt)}</div>
       </div>
       <div class="tools-row">${q.say ? sayButton(q.say, q.sayLabel && !q.sayAfter ? q.sayLabel : '발음 듣기', q.sayBig) : ''}<button class="scratch-btn" type="button" data-act="scratch">${PENCIL}연습장</button></div>
       ${body}
@@ -1132,7 +1182,9 @@
     }).join('');
     const right = results.filter(r => r && r.correct).length;
     const left = draftsLeft();
-    const msg = STAGE && tab === 'practice' && !retrying
+    const msg = PRACTICE && tab === 'practice' && !retrying
+      ? (right >= passN() ? (CFG.practice.mix ? '섞어 풀기도 해냈어요! 익힌 DT를 처음 보는 문제에도 꺼내 쓸 수 있어요.' : '이 DT를 익혔어요! ✓ 다음 카드로 가 볼까요?') : `${passN()}문제 이상 맞혀야 익힌 거예요. 꼬리표를 눌러 카드를 다시 읽고 도전해 봐요!`)
+      : STAGE && tab === 'practice' && !retrying
       ? (right >= PASS ? `통과했어요! ${'★'.repeat(stars(right))}${nextLevel() ? ' 다음 단계가 열렸어요.' : STAGES.at(-1).id === track ? ' 마지막 단계까지 왔어요!' : ''}` : `${PASS}문제 이상 맞혀야 통과예요. 해설을 읽고 다시 도전해 봐요!`)
       : STAGE && tab === 'practice' && retrying
         ? ((stageBest()[track] || 0) >= PASS ? '틀린 문제까지 다 풀었어요! 이 단계는 통과했어요.' : `틀린 문제를 다시 풀었어요. 통과하려면 ‘새 10문제’에서 처음 채점할 때 ${PASS}문제 이상 맞혀야 해요.`)
@@ -1141,8 +1193,9 @@
       ? `<div class="score"><span class="big">${right} / ${deck.length}${mark('ok')}</span><p>${msg}</p></div>
         <div class="row">
           ${right < deck.length ? '<button class="btn ghost" type="button" data-act="retry-wrong">틀린 문제만 다시</button>' : ''}
-          <button class="btn${nextLevel() ? ' ghost' : ''}" type="button" data-act="restart">새 10문제</button>
+          <button class="btn${nextLevel() || (PRACTICE && right >= passN()) ? ' ghost' : ''}" type="button" data-act="restart">${PRACTICE ? '새 문제' : '새 10문제'}</button>
           ${nextLevel() ? `<button class="btn" type="button" data-track="${nextLevel()}">다음 단계: ${STAGE ? `${STAGES.findIndex(x => x.id === nextLevel()) + 1}. ` : ''}${TRACK_LABEL[nextLevel()]} →</button>` : ''}
+          ${PRACTICE && !retrying ? `<a class="btn${right >= passN() ? '' : ' ghost'}" href="${CFG.dtPage}?next=${encodeURIComponent(CFG.practice.course || '')}">${right >= passN() ? '다음 할 카드 →' : 'DT 카드로'}</a>` : ''}
         </div>`
       : `<div class="row ws-grade"><button class="btn" type="button" data-act="grade" id="grade-btn">채점하기</button>
           <span class="ws-left" id="ws-left">${left ? `안 쓴 답 ${left}개` : '다 썼어요!'}</span></div>`;
@@ -1167,10 +1220,10 @@
     } else {
       body = `<div class="ws-short"><input class="ws-in" data-ws="${i}" inputmode="${q.text ? 'text' : 'decimal'}" autocomplete="off" aria-label="${i + 1}번 답" placeholder="답" value="${esc(r ? r.picked : d)}" ${r ? 'disabled' : ''}>${r || q.text || (STAGES.find(x => x.id === track) || {}).part === '초등' ? '' : `<button class="btn ghost" type="button" data-ws-neg="${i}" aria-label="음수 부호 넣기/빼기">±</button>`}</div>`;
     }
-    const fb = r && !r.correct ? `<div class="sol"><span class="k">정답 ${q.type === 'mc' ? LABELS.at(q.ans) : esc(q.answerText || [].concat(q.ans)[0])}</span>${q.sol || ''}</div>${dtLinksHTML(q.dt, '다시 볼 DT')}` : '';
+    const fb = r && !r.correct ? `<div class="sol"><span class="k">정답 ${q.type === 'mc' ? LABELS.at(q.ans) : esc(q.answerText || [].concat(q.ans)[0])}</span>${q.sol || ''}</div>` : '';
     return `<li class="ws-item${r ? (r.correct ? ' ok' : ' no') : ''}">
       <div class="qhead"><div class="qnum">${i + 1}${r ? mark(r.correct ? 'ok' : 'no') : ''}</div>
-        <div><div class="meta"><span class="tag">${esc(q.kind)}</span></div><p class="qtext">${q.q}</p></div>
+        <div><div class="meta"><span class="tag">${esc(q.kind)}</span></div><p class="qtext">${q.q}</p>${dtChipsHTML(q.dt)}</div>
         <button class="ws-pad" type="button" data-ws-pad="${i}" aria-label="${i + 1}번 연습장">${PENCIL}</button></div>
       ${body}${fb}
     </li>`;
@@ -1187,7 +1240,8 @@
     save('wrong', [...wrong]);
     if (!retrying && tab === 'practice' && (STAGE || DRILL)) {
       const right = results.filter(x => x && x.correct).length;
-      if (STAGE) { const st = STAGES.find(x => x.id === track); report({ kind: 'stage', ref: track, title: `${track} ${st ? st.title : TRACK_LABEL[track] || ''}`, right, total: deck.length, data: { pass: right >= PASS } }); }
+      if (PRACTICE) report({ kind: 'dt', ref: track, title: CFG.practice.title, right, total: deck.length, data: { pass: right >= passN() } });
+      else if (STAGE) { const st = STAGES.find(x => x.id === track); report({ kind: 'stage', ref: track, title: `${track} ${st ? st.title : TRACK_LABEL[track] || ''}`, right, total: deck.length, data: { pass: right >= PASS } }); }
       else { const op = opOf(track); report({ kind: 'drill', ref: track, title: `${op ? op.label + ' ' : ''}${TRACK_LABEL[track] || track}`, right, total: deck.length }); }
     }
     if (STAGE && tab === 'practice' && !retrying) {
@@ -1212,6 +1266,7 @@
   // 연산 연습: 이번 10문제에서 9개 이상 맞히면
   function nextLevel() {
     if (!SHEET || tab !== 'practice') return '';
+    if (PRACTICE) return '';
     if (STAGE) { const i = STAGES.findIndex(x => x.id === track); return (stageBest()[track] || 0) >= PASS && i >= 0 && i < STAGES.length - 1 ? STAGES[i + 1].id : ''; }
     if (retrying) return '';
     const right = results.filter(r => r && r.correct).length;

@@ -48,3 +48,25 @@
 .dt-bar{height:6px; border-radius:999px; background:var(--line); overflow:hidden}
 .dt-bar span{display:block; height:100%; background:var(--pen)}
 .chips.levels .chip.dt-chip .n{margin:0 0 0 6px}
+/* 익히기 길: 다음 할 카드 + 앞 DT 순서대로 늘어선 카드 (잠김·배울 차례·문제로 익히기·익힘) */
+.dt-known.dt-mastered{background:#1E7A4C; color:#fff; border-color:#1E7A4C}
+.dt-card-acts{margin-top:8px}
+.dt-next{border:2px solid var(--sel)}
+.dt-next.done{border-color:#1E7A4C; text-align:center}
+.dt-next-lbl{margin:0 0 8px; font-weight:700; color:var(--sel); font-size:14px}
+.dt-steps{margin:12px 0 4px; padding-left:0; list-style:none; display:grid; gap:6px; font-size:14.5px}
+.dt-steps li{padding:8px 10px; border-radius:10px; background:var(--paper); color:var(--muted)}
+.dt-steps li.done{color:var(--ink)}
+.dt-steps li.now{background:var(--sel-soft); color:var(--ink); font-weight:600; box-shadow:inset 3px 0 0 var(--sel)}
+.dt-path{list-style:none; padding:0; margin:14px 0 0; display:grid; gap:6px}
+.dt-path-row{display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--line); border-radius:12px; background:var(--card)}
+.dt-path-row.is-next{border-color:var(--sel); box-shadow:0 0 0 1px var(--sel)}
+.dt-path-row.st-lock{opacity:.55}
+.dt-path-row.st-done{background:color-mix(in srgb, #1E7A4C 8%, var(--card))}
+.dt-path-k{flex:none; width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700; background:#2F6FD6}
+.dt-path-k.is-t{background:#E07A1F}
+.dt-path-name{flex:1; min-width:0; text-align:left; background:none; border:0; padding:0; font:inherit; color:var(--ink); cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.dt-path-name .dt-id{color:var(--muted); font-size:12.5px; margin-right:4px}
+.dt-path-st{flex:none; font-size:12.5px; color:var(--muted)}
+.dt-path-row.st-done .dt-path-st{color:#1E7A4C; font-weight:700}
+.dt-path-row.st-solve .dt-path-st, .dt-path-row.st-learn .dt-path-st{color:var(--sel); font-weight:600}
