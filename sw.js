@@ -8,25 +8,28 @@
  * - 학생 기록(localStorage)은 건드리지 않음.
  * 이 파일은 빌드할 때마다 새 버전 번호가 들어가서, 올리면 자동으로 새 버전으로 바뀝니다.
  */
-const VERSION = '202610260941';
+const VERSION = '202610270417';
 const SITE_CACHE = `yireh-hw-site-${VERSION}`;
 const CDN_CACHE = 'yireh-cdn-v1';
 const PRECACHE = [
   "./",
   "index.html",
+  "homework.html",
+  "assets/hub.js?v=202610270417",
+  "assets/hub.css?v=202610270417",
   "drill.html",
   "stage.html",
   "dt.html",
   "practice.html",
-  "assets/dt-bank.js?v=202610260941",
-  "assets/stage-data.js?v=202610260941",
-  "assets/dt-data.js?v=202610260941",
-  "assets/dt.js?v=202610260941",
-  "assets/dt.css?v=202610260941",
+  "assets/dt-bank.js?v=202610270417",
+  "assets/stage-data.js?v=202610270417",
+  "assets/dt-data.js?v=202610270417",
+  "assets/dt.js?v=202610270417",
+  "assets/dt.css?v=202610270417",
   "manifest.webmanifest",
-  "assets/quiz.css?v=202610260941",
-  "assets/quiz.js?v=202610260941",
-  "assets/drill-data.js?v=202610260941",
+  "assets/quiz.css?v=202610270417",
+  "assets/quiz.js?v=202610270417",
+  "assets/drill-data.js?v=202610270417",
   "assets/yireh-math-wide.svg",
   "icons/app-192.png",
   "icons/app-512.png",

@@ -426,3 +426,13 @@ button.dot.now{outline:2px solid var(--sel); outline-offset:2px}
 .dtpop-app{font-size:14px; color:var(--muted); line-height:1.55}
 .dtpop-card .row{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
 .dtp-head .lbl{white-space:nowrap}
+
+/* 이레 수학 안쪽 화면 (CFG.compact): 한 줄 머리글 + 접힌 단계 고르기 → 문제가 바로 보이게 */
+header.cbar{flex-direction:row; align-items:center; gap:12px; flex-wrap:wrap}
+header.cbar .home{align-self:center; padding:6px 12px; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--ink)}
+header.cbar h1{font-family:inherit; font-weight:600; font-size:20px; line-height:1.3}
+.pick-sum{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between}
+.pick-now{font-weight:600; font-size:15px; min-width:0}
+.pick-part{display:inline-block; font-size:12px; font-weight:600; color:var(--sel); background:var(--sel-soft); border-radius:999px; padding:1px 8px; margin-right:2px; vertical-align:1px}
+.pick-now .stage-stars{font-size:13px; color:var(--pen); font-weight:500; margin-left:4px}
+.wrap:has(header.cbar){gap:12px}

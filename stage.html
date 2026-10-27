@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Nanum+Pen+Script&display=swap">
-<link rel="stylesheet" href="assets/quiz.css?v=202610260941">
-<link rel="preload" href="assets/quiz.js?v=202610260941" as="script">
+<link rel="stylesheet" href="assets/quiz.css?v=202610270417">
+<link rel="preload" href="assets/quiz.js?v=202610270417" as="script">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#C8392B">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/app-192.png">
@@ -369,14 +369,14 @@
 </head>
 <body>
 <div class="wrap" id="app"></div>
-<script>window.QUIZ_CONFIG = {"mode":"stage","subject":"stage","dtPage":"dt.html","practicePage":"practice.html","title":"이레 수학 단계별 문제","math":true,"speech":false,"home":"index.html","homeLabel":"← 숙제로","logo":"assets/yireh-math-wide.svg","logoText":"이레 수학","eyebrow":"초등부터 고등까지 한 단계씩","lead":"단계를 고르고 10문제를 다 푼 뒤 ‘채점하기’를 눌러요. 8문제 이상 맞히면 다음 단계가 열려요. 틀린 문제는 오답노트에 모여요.","links":[{"href":"dt.html","label":"DT 카드 · 정의와 정리 →"},{"href":"drill.html","label":"+ − × ÷ 연산 연습 →"}],"footer":"연필 버튼으로 연습장에 풀어 볼 수 있어요 · 쓰던 답은 저장돼서 나중에 이어서 풀 수 있어요"};</script>
+<script>window.QUIZ_CONFIG = {"mode":"stage","subject":"stage","dtPage":"dt.html","practicePage":"practice.html","title":"이레 수학 단계별 문제","math":true,"speech":false,"compact":true,"home":"index.html","homeLabel":"← 처음","lastKey":"irae-math-last","shortTitle":"단계별 문제","logo":"assets/yireh-math-wide.svg","logoText":"이레 수학","eyebrow":"초등부터 고등까지 한 단계씩","lead":"단계를 고르고 10문제를 다 푼 뒤 ‘채점하기’를 눌러요. 8문제 이상 맞히면 다음 단계가 열려요. 틀린 문제는 오답노트에 모여요.","links":[{"href":"dt.html","label":"DT 카드 · 정의와 정리 →"},{"href":"drill.html","label":"+ − × ÷ 연산 연습 →"}],"footer":"연필 버튼으로 연습장에 풀어 볼 수 있어요 · 쓰던 답은 저장돼서 나중에 이어서 풀 수 있어요"};</script>
 <script>
 window.MathJax = { tex: { inlineMath: [['$', '$']] }, svg: { fontCache: 'global' },
   startup: { typeset: false, ready() { MathJax.startup.defaultReady(); MathJax.startup.promise.then(function () { window.IRAE_READY && window.IRAE_READY(); }); } } };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" async></script>
-<script src="assets/stage-data.js?v=202610260941"></script>
-<script src="assets/quiz.js?v=202610260941"></script>
+<script src="assets/stage-data.js?v=202610270417"></script>
+<script src="assets/quiz.js?v=202610270417"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(function () {});
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});

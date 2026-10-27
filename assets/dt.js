@@ -90,11 +90,17 @@
     </article>`;
   }
 
+  let pickerOpen = false;   // CFG.compact: 학년 고르기를 펼쳤는지
   function renderPicker() {
     const c = cur();
     if (!c) { $('#picker').innerHTML = '<p class="empty">DT 카드가 아직 없어요.</p>'; return; }
     const kn = known();
-    $('#picker').innerHTML = `
+    if (CFG.compact && !pickerOpen) {
+      $('#picker').innerHTML = `<div class="pick-sum"><span class="pick-now"><span class="pick-part">${esc(c.part)}</span> ${esc(c.label)}</span>
+        <button class="btn ghost small" type="button" data-act="picker-open" aria-expanded="false">학년 바꾸기 ▾</button></div>`;
+      return;
+    }
+    $('#picker').innerHTML = `${CFG.compact ? `<div class="pick-sum"><span class="pick-now">학년 고르기</span><button class="btn ghost small" type="button" data-act="picker-close" aria-expanded="true">접기 ▴</button></div>` : ''}
       <div class="pick-row"><span class="lbl">과정</span>
         <div class="chips levels ops">${PARTS.map(p => `<button class="chip" type="button" data-part="${esc(p)}" aria-pressed="${p === c.part}">${esc(p)}</button>`).join('')}</div></div>
       <div class="pick-row"><span class="lbl">학년</span>
@@ -116,8 +122,8 @@
     const d = c.items.filter(i => i.k === 'D').length, t = c.items.length - d;
     if (tab === 'path') {
       const m = c.items.filter(it => mastered(it.id)).length;
-      $('#day').innerHTML = `<span class="date">${esc(c.label)} 익히기 길</span><span class="badge">익힌 카드 ${m} / ${c.items.length}</span>
-        <p class="sub">앞 DT부터 한 장씩 익혀요. 한 장은 <b>배우기 → 외우기 → 문제로 익히기</b> 순서예요. 문제를 ${'80%'} 이상 맞히면 익힌 카드가 되고, 그 카드를 앞 DT로 쓰는 다음 카드가 열려요.</p>
+      $('#day').innerHTML = `${CFG.compact ? '' : `<span class="date">${esc(c.label)} 익히기 길</span><span class="badge">익힌 카드 ${m} / ${c.items.length}</span>`}
+        <p class="sub">${CFG.compact ? '한 장씩 <b>배우기 → 외우기 → 문제로 익히기</b>. 문제를 80% 이상 맞히면 다음 카드가 열려요.' : `앞 DT부터 한 장씩 익혀요. 한 장은 <b>배우기 → 외우기 → 문제로 익히기</b> 순서예요. 문제를 ${'80%'} 이상 맞히면 익힌 카드가 되고, 그 카드를 앞 DT로 쓰는 다음 카드가 열려요.`}</p>
         <div class="dt-bar" aria-hidden="true"><span style="width:${Math.round(m / c.items.length * 100)}%"></span></div>`;
     } else if (tab === 'learn') {
       $('#day').innerHTML = `<span class="date">${esc(c.label)} DT</span><span class="badge dt-badge-d">정의 ${d}</span><span class="badge">정리 ${t}</span>
@@ -226,7 +232,13 @@
       if (el) el.scrollIntoView({ block: 'center' });
     }
   }
-  function renderAll() { renderPicker(); renderTabs(); renderDay(); renderStage(); }
+  function renderAll() { renderPicker(); renderTabs(); renderDay(); renderStage(); recordLast(); }
+  // 첫 화면의 [이어서 풀기] (CFG.lastKey)
+  function recordLast() {
+    const c = cur(); if (!CFG.lastKey || !c) return;
+    const nx = nextCard(c);
+    try { localStorage.setItem(CFG.lastKey, JSON.stringify({ href: 'dt.html', title: 'DT 익히기', sub: `${c.label}${nx ? ' · 다음: ' + nx.name : ' · 다 익혔어요'}`, at: Date.now() })); } catch (e) {}
+  }
 
   function go(id) {
     const it = BY_ID.get(id); if (!it) return;
@@ -240,7 +252,8 @@
     // 학년·메뉴를 직접 고르면 주소의 #카드번호를 지움 (새로고침했을 때 그 카드로 되돌아가지 않게)
     if ((b.dataset.part || b.dataset.course || b.dataset.tab) && location.hash) history.replaceState(null, '', location.pathname + location.search);
     if (b.dataset.part) { const c = COURSES.find(x => x.part === b.dataset.part); if (c && c.part !== cur().part) { course = c.id; save('course', course); focusId = ''; renderAll(); } return; }
-    if (b.dataset.course) { course = b.dataset.course; save('course', course); focusId = ''; query = ''; renderAll(); return; }
+    if (b.dataset.act === 'picker-open' || b.dataset.act === 'picker-close') { pickerOpen = b.dataset.act === 'picker-open'; renderPicker(); return; }
+    if (b.dataset.course) { pickerOpen = false; course = b.dataset.course; save('course', course); focusId = ''; query = ''; renderAll(); return; }
     if (b.dataset.tab) { tab = b.dataset.tab; save('tab', tab); focusId = ''; renderAll(); window.scrollTo({ top: $('#tabs').offsetTop - 12 }); return; }
     if (b.dataset.go) { go(b.dataset.go); history.replaceState(null, '', '#' + b.dataset.go); return; }
     if (b.dataset.unknow) { const kn = known(); delete kn[b.dataset.unknow]; save('known', kn); if (memo && memo.course === BY_ID.get(b.dataset.unknow).course && !memo.queue.includes(b.dataset.unknow)) { memo.queue.push(b.dataset.unknow); save('memo', memo); } renderAll(); return; }
@@ -269,7 +282,13 @@
   })();
   const rest = CFG.title && CFG.logoText && CFG.title.startsWith(CFG.logoText) ? CFG.title.slice(CFG.logoText.length).trim() : CFG.title;
   document.title = CFG.title || '이레 수학 DT';
-  $('#app').innerHTML = `
+  $('#app').innerHTML = CFG.compact ? `
+    <header class="cbar"><a class="home" href="${CFG.home || 'index.html'}">${CFG.homeLabel || '← 처음'}</a><h1>${CFG.shortTitle || CFG.title}</h1></header>
+    <section class="picker" id="picker" aria-label="학년"></section>
+    <nav class="chips" id="tabs" aria-label="DT 메뉴"></nav>
+    <section class="day" id="day" aria-live="polite"></section>
+    <main id="stage"></main>
+    <footer>${CFG.footer || ''}${VER_TAG}</footer>` : `
     <header>
       <a class="home" href="${CFG.home || 'index.html'}">${CFG.homeLabel || '← 숙제로'}</a>
       <span class="eyebrow">${CFG.eyebrow || ''}</span>
@@ -285,5 +304,5 @@
   const hashId = decodeURIComponent(location.hash.slice(1));
   if (BY_ID.has(hashId)) go(hashId); else renderAll();
   window.addEventListener('hashchange', () => { const id = decodeURIComponent(location.hash.slice(1)); if (BY_ID.has(id)) go(id); });
-  window.DT_DEBUG = { known, memo: () => memo, blanked: id => blanked(BY_ID.get(id)), byId: id => BY_ID.get(id), mastered, stateOf: id => stateOf(BY_ID.get(id)), nextCard: () => nextCard(cur()), countOf };
+  window.DT_DEBUG = { course: () => course, known, memo: () => memo, blanked: id => blanked(BY_ID.get(id)), byId: id => BY_ID.get(id), mastered, stateOf: id => stateOf(BY_ID.get(id)), nextCard: () => nextCard(cur()), countOf };
 })();
