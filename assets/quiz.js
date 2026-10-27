@@ -90,6 +90,15 @@
   function save(name, value) { try { localStorage.setItem(`${KEY}-${name}`, JSON.stringify(value)); } catch {} }
   // 학습 기록을 이레 서버로 (카카오로 로그인한 학생만, gate.js의 IRAE_AUTH가 모아 두었다가 보냄)
   const SUBJ = { math: '수학', english: '영어' }[CFG.subject] || '';
+  // 영어 영역 (2022 개정 영어과: 이해 = 듣기·읽기, 표현 = 말하기·쓰기). CFG.areas 일 때 문제마다 꼬리표, 결과는 서버 기록 data.areas
+  const AREA_OF = { '뜻 고르기': ['이해', '읽기'], '듣고 고르기': ['이해', '듣기'], '철자 쓰기': ['표현', '쓰기'], '숙어·표현': ['이해', '읽기'], '숙어': ['이해', '읽기'],
+    '빈칸 채우기': ['이해', '읽기'], '문장 해석': ['이해', '읽기'], '단어 배열': ['표현', '쓰기'] };
+  const areaOf = q => CFG.areas ? AREA_OF[q.kind] || null : null;
+  function areaStats(qs, rs) {
+    const out = {};
+    qs.forEach((q, i) => { const a = areaOf(q); if (!a || !rs[i]) return; const k = a[0]; out[k] = out[k] || [0, 0]; out[k][1]++; if (rs[i].correct) out[k][0]++; });
+    return out;
+  }
   function report(ev) { try { if (window.IRAE_AUTH) window.IRAE_AUTH.send(ev); } catch {} }
 
   // ── 상태 ──
@@ -187,10 +196,13 @@
     const sameP = list => list.filter(o => !item.p || o.p === item.p);
     const otherP = list => list.filter(o => item.p && o.p !== item.p);
     const picked = [];
+    // 뜻 보기(key m): 뜻이 하나라도 겹치는 단어는 오답 보기로 쓰지 않음 (big '큰' 문제에 large '(크기·양이) 큰'이 나오면 정답이 둘)
+    const senses = v => String(v || '').replace(/\([^)]*\)/g, '').split(/[,;]/).map(t => t.trim()).filter(Boolean);
+    const clash = (a, b) => key === 'm' && senses(a).some(x => senses(b).includes(x));
     for (const o of [...shuffle(sameP(others), rand), ...shuffle(otherP(others), rand), ...shuffle(sameP(more), rand),
       ...shuffle(otherP(more), rand), ...shuffle(FALLBACK[type] || [], rand)]) {
       if (picked.length === 4) break;
-      if (o[key] !== item[key] && !picked.some(p => p[key] === o[key])) picked.push(o);
+      if (o[key] !== item[key] && !clash(o[key], item[key]) && !picked.some(p => p[key] === o[key] || clash(p[key], o[key]))) picked.push(o);
     }
     return picked;
   }
@@ -213,7 +225,7 @@
   }
   function buildInner(item, i, rand, dirHint) {
     const src = `${poolKey()}#${i}`;
-    const base = { src, cat: item.cat || (track === 'bible' ? '성경' : ''), unit: item.unit || '', kind: item.kind || '', dt: item.dt || [] };
+    const base = { src, cat: item.cat || (track === 'bible' ? '성경' : ''), unit: item.unit || '', kind: item.kind || '', dt: item.dt || [], ...(item.bv ? { bv: item.bv } : {}) };
     if (item.t === 'mc') {
       return { ...base, type: 'mc', q: item.q, choices: item.c.map(fmtChoice), ans: item.a, sol: item.sol || '', kind: base.kind || '5지선다' };
     }
@@ -882,16 +894,18 @@
         <p class="sub">단원마다 꼭 알아야 할 개념이에요. 카드를 눌러 펼쳐 읽고, 확인 문제로 바로 풀어 봐요. 수업 때는 ‘크게 보기’로 한 장씩 넘기며 설명할 수 있어요.</p>`;
       return;
     }
+    // 앱이 주는 날마다 안내 (CFG.dayNote, 예: 이레 영어의 내신 D-day·시험 기간 복습). 오답노트 수를 같이 넘김
+    const note = () => { if (typeof CFG.dayNote !== 'function') return ''; const w = new Set(load('wrong', [])), kn = new Set(load('known', [])), ks = [...pool().keys()]; try { return CFG.dayNote(track, ks.filter(i => w.has(`${poolKey()}#${i}`)).length, ks.filter(i => kn.has(`${poolKey()}#${i}`)).length, ks.length) || ''; } catch (e) { return ''; } };
     if (tab === 'period') {
       const done = doneMap()[`${poolKey()}|${view}`];
       const s = streak();
-      $('#day').innerHTML = `
+      $('#day').innerHTML = `${note()}
         <button class="nav" type="button" data-act="prev" aria-label="이전" ${START && view <= START ? 'disabled' : ''}>◀</button>
         <span class="date">${periodLabel(view)}</span>
         <button class="nav" type="button" data-act="next-period" aria-label="다음" ${view >= THIS_PERIOD ? 'disabled' : ''}>▶</button>
         ${done ? `<span class="badge">완료 ${done.right}/${done.total}</span>` : ''}
         ${s ? `<span class="streak">연속 ${s}${WEEK ? '주' : '일'}</span>` : ''}
-        <p class="sub">${view === THIS_PERIOD ? `${who} ${PERIOD_NAME} ${deck.length}문제예요.` : `지난 ${WEEK ? '주' : '날'}의 문제예요. 놓친 ${WEEK ? '주' : '날'}를 채워 보세요.`}${pool().length < 20 ? ` 문제가 더 추가되면 한 번에 10문제씩 나와요.` : ''}</p>`;
+        <p class="sub">${view === THIS_PERIOD ? `${who} ${PERIOD_NAME} ${deck.length}문제예요.` : `지난 ${WEEK ? '주' : '날'}의 문제예요. 놓친 ${WEEK ? '주' : '날'}를 채워 보세요.`}${!CFG.mix && pool().length < 20 ? ` 문제가 더 추가되면 한 번에 10문제씩 나와요.` : ''}</p>`;
     } else if (PRACTICE && tab === 'practice') {
       const n = Math.min(10, pool().length), b = stageBest()[track] || 0;
       $('#day').innerHTML = `<span class="date">${esc(CFG.practice.title)}</span>${b ? `<span class="badge">최고 ${b} / ${n}${b >= passN() ? ' · 익힘 ✓' : ''}</span>` : ''}
@@ -905,7 +919,7 @@
       const op = opOf(track);
       $('#day').innerHTML = `${CFG.compact ? '' : `<span class="date">${op.label} ${op.tracks.indexOf(track) + 1}단계 · ${TRACK_LABEL[track]}</span>`}<p class="sub">10문제씩 풀어요. 다 풀면 ‘새 10문제’로 계속 풀 수 있고, 9문제 이상 맞히면 다음 단계로 올라갈 수 있어요.</p>`;
     } else if (tab === 'practice') {
-      $('#day').innerHTML = `<span class="date">${who} 연습</span><p class="sub">전체 ${pool().length}문제 중 무작위로 10문제를 골라요. 다 풀면 ‘새 10문제’로 바꿀 수 있어요.</p>`;
+      $('#day').innerHTML = `${note()}<span class="date">${who} 연습</span><p class="sub">전체 ${pool().length}문제 중 무작위로 10문제를 골라요. 다 풀면 ‘새 10문제’로 바꿀 수 있어요.</p>`;
     } else {
       $('#day').innerHTML = `<span class="date">${who} 오답노트</span><p class="sub">틀린 문제에서 골라요. 다시 맞히면 오답노트에서 빠집니다.</p>`;
     }
@@ -1131,7 +1145,8 @@
       ${q.type === 'open' ? '' : `<div class="sol"><span class="k">해설</span>${q.sol || '해설이 없어요.'}</div>`}
       <div class="row">${q.sayAfter ? sayButton(q.sayAfter, q.sayLabel) : ''}<button class="btn" type="button" data-act="next" id="next-btn">${last ? '결과 보기' : '다음 문제 →'}</button></div>` : '';
     const meta = [q.cat ? `<span>${esc(q.cat)}</span>` : '', q.unit ? `<span>${q.cat ? '· ' : ''}${esc(q.unit)}</span>` : '',
-      `<span class="tag${track === 'bible' ? ' bible' : ''}">${esc(q.kind)}</span>`].join('');
+      `<span class="tag${track === 'bible' ? ' bible' : ''}">${esc(q.kind)}</span>`, areaOf(q) ? `<span class="area area-${areaOf(q)[0] === '이해' ? 'in' : 'out'}" title="2022 개정 영어과 영역">${areaOf(q)[0]} · ${areaOf(q)[1]}</span>` : '',
+      q.bv ? `<span class="area area-bv" title="2022 개정 교육과정 기본 어휘">기본 어휘${q.bv === 'elem' ? ' · 초등' : q.bv === 'mh' ? ' · 중고' : ''}</span>` : ''].join('');
     return `<article class="card">
       <div class="qhead">
         <div class="qnum">${idx + 1}${done ? mark(res.correct ? 'ok' : 'no') : ''}</div>
@@ -1369,11 +1384,13 @@
     const wrong = new Set(load('wrong', []));
     correct ? wrong.delete(q.src) : wrong.add(q.src);
     save('wrong', [...wrong]);
+    // 한 번이라도 맞힌 문제 (CFG.areas: 이레 영어 기본 어휘 '익힌 단어' 수)
+    if (CFG.areas && correct) { const kn = new Set(load('known', [])); if (!kn.has(q.src)) { kn.add(q.src); save('known', [...kn]); } }
     if (tab === 'period' && !retrying && deck.every((_, i) => results.at(i))) {
       const done = doneMap();
       done[`${poolKey()}|${view}`] = { right: results.filter(r => r.correct).length, total: deck.length };
       save('done', done);
-      report({ kind: 'set', ref: `${CFG.subject}|${CFG.grade || ''}|${track}|${view}`, title: `${SUBJ} ${GRADE_LABEL[CFG.grade] || ''} ${TRACK_LABEL[track] || ''} · ${WEEK ? '이번 주' : '오늘'}(${view}) 문제`.replace(/\s+/g, ' ').trim(), right: done[`${poolKey()}|${view}`].right, total: deck.length });
+      report({ kind: 'set', ref: `${CFG.subject}|${CFG.grade || ''}|${track}|${view}`, title: `${SUBJ} ${GRADE_LABEL[CFG.grade] || ''} ${TRACK_LABEL[track] || ''} · ${WEEK ? '이번 주' : '오늘'}(${view}) 문제`.replace(/\s+/g, ' ').trim(), right: done[`${poolKey()}|${view}`].right, total: deck.length, ...(CFG.areas ? { data: { areas: areaStats(deck, results) } } : {}) });
     }
     stash();
     renderTabs(); renderDay(); renderStage();

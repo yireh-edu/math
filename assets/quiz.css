@@ -438,3 +438,24 @@ header.cbar h1{font-family:inherit; font-weight:600; font-size:20px; line-height
 .wrap:has(header.cbar){gap:12px}
 header.cbar .cbar-link{margin-left:auto; font-size:14px; font-weight:600; text-decoration:none; padding:6px 12px; border-radius:999px; background:var(--sel-soft); color:var(--sel)}
 header.cbar .cbar-logo{height:52px; width:auto; display:block; margin-left:-4px}
+/* 이레 영어: 내신 범위·학기 진도 안내 줄 */
+.day .note{flex-basis:100%; margin:0 0 4px; padding:10px 12px; border-radius:12px; background:var(--sel-soft); font-size:14px; line-height:1.55}
+.day .note .btn{margin-top:6px}
+.day .note.naesin{background:var(--pen-soft)}
+/* 영어 영역 꼬리표 (이해·표현) */
+.meta .area{font-size:12px; font-weight:600; border-radius:999px; padding:1px 8px; margin-left:4px}
+.meta .area-in{background:var(--sel-soft); color:var(--sel)}
+.meta .area-out{background:var(--pen-soft); color:var(--pen)}
+.day details.std{flex-basis:100%; font-size:14px; border:1px solid var(--line); border-radius:12px; padding:8px 12px; background:var(--card)}
+.day details.std summary{cursor:pointer; font-weight:600; color:var(--sel)}
+.day details.std ul{margin:4px 0 8px; padding-left:18px}
+.day details.std li{margin:3px 0; line-height:1.5}
+.day details.std .std-a{margin:10px 0 0; font-weight:600}
+.day details.std .std-src{margin:6px 0 0; color:var(--muted); font-size:12px}
+.meta .area-bv{background:#E9F5EC; color:#2E7D4F}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .meta .area-bv{background:#1C3326; color:#7FD3A0} }
+.day .note.bv{background:#E9F5EC}
+.day .note .bv-bar{display:block; height:6px; border-radius:3px; background:var(--line); margin:6px 0 4px; overflow:hidden}
+.day .note .bv-bar span{display:block; height:100%; background:#2E7D4F}
+.day .note .std-src{display:block; color:var(--muted); font-size:12px}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .day .note.bv{background:#1C3326} }
