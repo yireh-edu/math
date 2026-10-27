@@ -20,6 +20,8 @@
   const DATA = window.QUIZ_DATA || { general: [], bible: [] };
   const GRADE_LABEL = { e1:'초1', e2:'초2', e3:'초3', e4:'초4', e5:'초5', e6:'초6', m1:'중1', m2:'중2', m3:'중3', h1:'고1', h2:'고2', h3:'고3' };
   const TRACK_LABEL = { s1: '1학기', s2: '2학기', elem: '초등', mid: '중등', high: '고등', general: '전체', bible: '성경', ...(window.QUIZ_TRACKS || {}) };
+  // 고르기 순서 (CFG.trackOrder, 예: 이레 영어 ['e12', 'e34', 'e56', 'mid', 'high']), 없으면 위 순서
+  const TRACK_KEYS = CFG.trackOrder || Object.keys(TRACK_LABEL);
   // 연산 연습 모드: 문제를 자릿수 단계별로 만들어 둔 것(drill-data.js)을 연습·오답노트로 풂
   const DRILL = CFG.mode === 'drill';
   const OPS = DRILL ? (window.QUIZ_OPS || []) : [];
@@ -94,7 +96,7 @@
   const month = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', month: 'numeric' }).format(new Date()));
   const nowSem = month >= 3 && month <= 8 ? 's1' : 's2';
   let track = load(`track-${CFG.grade || 'level'}`, CFG.defaultTrack || nowSem);
-  if (!DATA[track] || !DATA[track].length) track = Object.keys(TRACK_LABEL).find(k => (DATA[k] || []).length) || 's1';
+  if (!DATA[track] || !DATA[track].length) track = TRACK_KEYS.find(k => (DATA[k] || []).length) || 's1';
   let tab = load(`tabsel-${CFG.grade}`, 'period');   // period | practice | wrong (마지막으로 보던 탭)
   if (!['period', 'practice', 'wrong', 'concept'].includes(tab)) tab = 'period';
   if (SHEET && tab === 'period') tab = 'practice';
@@ -301,7 +303,10 @@
   }
   function mixDeck(pickFor) {
     const used = new Set(), out = [];
-    for (const [kind, n] of CFG.mix) {
+    // 이 단계에 없는 종류(예: 초1·2의 문장 빈칸)는 그 개수만큼 뜻 고르기로 채움 → 늘 같은 문제 수
+    const lack = CFG.mix.reduce((n, [kind, k]) => n + (mixCandidates(kind).length ? 0 : k), 0);
+    const mix = CFG.mix.map(([kind, n]) => [kind, kind === 'word' ? n + lack : n]);
+    for (const [kind, n] of mix) {
       const cands = mixCandidates(kind);
       if (!cands.length) continue;
       for (const i of pickFor(kind, cands, n)) {
@@ -840,13 +845,13 @@
           <div class="chips levels">${op.tracks.map((t, i) => `<button class="chip" type="button" data-track="${t}" aria-pressed="${t === track}"><span class="n">${i + 1}</span>${TRACK_LABEL[t]}</button>`).join('')}</div></div>`;
       return;
     }
-    const tracks = Object.keys(TRACK_LABEL).filter(t => (DATA[t] || []).length);
+    const tracks = TRACK_KEYS.filter(t => (DATA[t] || []).length);
     if (CFG.compact && !pickerOpen) {
       $('#picker').innerHTML = `<div class="pick-sum"><span class="pick-now">${CFG.grade ? `<span class="pick-part">${GRADE_LABEL[CFG.grade]}</span> ` : ''}${tracks.length > 1 ? TRACK_LABEL[track] : ''}</span>
-        <button class="btn ghost small" type="button" data-act="picker-open" aria-expanded="false">${tracks.length > 1 ? '학년·학기 바꾸기' : '학년 바꾸기'} ▾</button></div>`;
+        <button class="btn ghost small" type="button" data-act="picker-open" aria-expanded="false">${[CFG.grade ? '학년' : '', tracks.length > 1 ? CFG.trackLabel || '학기' : ''].filter(Boolean).join('·')} 바꾸기 ▾</button></div>`;
       return;
     }
-    $('#picker').innerHTML = `${CFG.compact ? `<div class="pick-sum"><span class="pick-now">학년${tracks.length > 1 ? '·학기' : ''} 고르기</span><button class="btn ghost small" type="button" data-act="picker-close" aria-expanded="true">접기 ▴</button></div>` : ''}
+    $('#picker').innerHTML = `${CFG.compact ? `<div class="pick-sum"><span class="pick-now">${[CFG.grade ? '학년' : '', tracks.length > 1 ? CFG.trackLabel || '학기' : ''].filter(Boolean).join('·')} 고르기</span><button class="btn ghost small" type="button" data-act="picker-close" aria-expanded="true">접기 ▴</button></div>` : ''}
       ${CFG.grade ? `<div class="pick-row"><span class="lbl">학년</span><strong>${GRADE_LABEL[CFG.grade]}</strong><a href="index.html">다른 학년 고르기</a></div>` : ''}
       ${tracks.length > 1 ? `<div class="pick-row"><span class="lbl">${CFG.trackLabel || '학기'}</span>
         <div class="seg track">${tracks.map(t => `<button type="button" data-track="${t}" aria-pressed="${t === track}">${TRACK_LABEL[t]} <span class="n">${DATA[t].length}</span></button>`).join('')}</div>
@@ -941,7 +946,7 @@
     else if (DRILL) { const op = opOf(track); v = { href: B + 'drill.html', title: '연산 연습', sub: `${op.label} ${op.tracks.indexOf(track) + 1}단계 · ${TRACK_LABEL[track]}` }; }
     else if (CFG.grade) {
       const tabName = { concept: '개념', period: `${PERIOD_NAME} 퀴즈`, practice: '연습', wrong: '오답노트' }[tab] || '';
-      v = { href: B + location.pathname.split('/').pop(), title: CFG.shortTitle || heading, sub: [tabName, Object.keys(TRACK_LABEL).filter(t => (DATA[t] || []).length).length > 1 ? TRACK_LABEL[track] : ''].filter(Boolean).join(' · ') };
+      v = { href: B + location.pathname.split('/').pop(), title: CFG.shortTitle || heading, sub: [tabName, TRACK_KEYS.filter(t => (DATA[t] || []).length).length > 1 ? TRACK_LABEL[track] : ''].filter(Boolean).join(' · ') };
     }
     if (v) try { localStorage.setItem(CFG.lastKey, JSON.stringify({ ...v, at: Date.now() })); } catch (e) {}
   }
@@ -1597,7 +1602,7 @@
   document.title = heading;
   // CFG.compact: 이레 수학 안쪽 화면 — 큰 로고·설명·다른 메뉴 없이 한 줄 머리글 (문제가 바로 보이게)
   $('#app').innerHTML = CFG.compact ? `
-    <header class="cbar"><a class="home" href="${CFG.home || 'index.html'}">${CFG.homeLabel || '← 처음'}</a><h1>${CFG.shortTitle || heading}</h1>${(CFG.links || []).map(l => `<a class="cbar-link" href="${l.href}">${l.short || l.label}</a>`).join('')}</header>
+    <header class="cbar">${CFG.home === false ? '' : `<a class="home" href="${CFG.home || 'index.html'}">${CFG.homeLabel || '← 처음'}</a>`}${CFG.home === false && CFG.logo ? `<img class="cbar-logo" src="${CFG.logo}" alt="${CFG.logoText || heading}"><h1 class="sr">${heading}</h1>` : `<h1>${CFG.shortTitle || heading}</h1>`}${(CFG.links || []).map(l => `<a class="cbar-link" href="${l.href}">${l.short || l.label}</a>`).join('')}</header>
     <section class="picker" id="picker" aria-label="${HW ? '숙제 정보' : '단계'}"></section>
     <nav class="chips" id="tabs" aria-label="퀴즈 종류"></nav>
     <section class="day" id="day" aria-live="polite"></section>
