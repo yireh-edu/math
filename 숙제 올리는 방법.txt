@@ -3,7 +3,7 @@
 [폴더 구성]
   current.js     ← 숙제 파일. 이 파일만 고쳐서 올리면 숙제가 바뀝니다.
   images/        ← 문제에 넣을 그림 (선택)
-  index.html, assets/, icons/, manifest.webmanifest, sw.js   ← 앱 파일 (고치지 마세요)
+  index.html(첫 화면), homework.html(숙제), stage·dt·drill·practice.html, assets/, icons/, manifest.webmanifest, sw.js   ← 앱 파일 (고치지 마세요)
 
 [새 숙제를 낼 때]
   1. current.js를 메모장이나 VS Code로 엽니다.

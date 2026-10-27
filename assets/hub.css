@@ -31,3 +31,4 @@
 .tile-stars{color:var(--pen); white-space:nowrap}
 .tile-prog{white-space:nowrap}
 @media (max-width:360px){ .tiles{grid-template-columns:1fr} .tile{min-height:0} }
+.hub-title{font-size:52px}

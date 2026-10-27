@@ -841,7 +841,12 @@
       return;
     }
     const tracks = Object.keys(TRACK_LABEL).filter(t => (DATA[t] || []).length);
-    $('#picker').innerHTML = `
+    if (CFG.compact && !pickerOpen) {
+      $('#picker').innerHTML = `<div class="pick-sum"><span class="pick-now">${CFG.grade ? `<span class="pick-part">${GRADE_LABEL[CFG.grade]}</span> ` : ''}${tracks.length > 1 ? TRACK_LABEL[track] : ''}</span>
+        <button class="btn ghost small" type="button" data-act="picker-open" aria-expanded="false">${tracks.length > 1 ? '학년·학기 바꾸기' : '학년 바꾸기'} ▾</button></div>`;
+      return;
+    }
+    $('#picker').innerHTML = `${CFG.compact ? `<div class="pick-sum"><span class="pick-now">학년${tracks.length > 1 ? '·학기' : ''} 고르기</span><button class="btn ghost small" type="button" data-act="picker-close" aria-expanded="true">접기 ▴</button></div>` : ''}
       ${CFG.grade ? `<div class="pick-row"><span class="lbl">학년</span><strong>${GRADE_LABEL[CFG.grade]}</strong><a href="index.html">다른 학년 고르기</a></div>` : ''}
       ${tracks.length > 1 ? `<div class="pick-row"><span class="lbl">${CFG.trackLabel || '학기'}</span>
         <div class="seg track">${tracks.map(t => `<button type="button" data-track="${t}" aria-pressed="${t === track}">${TRACK_LABEL[t]} <span class="n">${DATA[t].length}</span></button>`).join('')}</div>
@@ -927,12 +932,17 @@
   function renderAll() { renderPicker(); renderTabs(); renderDay(); renderStage(); recordLast(); }
   // 첫 화면의 [이어서 풀기]: 마지막으로 보던 화면을 기억 (CFG.lastKey, 예: irae-math-last)
   function recordLast() {
-    if (!CFG.lastKey) return;
+    if (!CFG.lastKey || typeof location === 'undefined') return;
     let v = null;
-    if (HW) { const s = hwSet(); if (s) v = { href: 'homework.html', title: '숙제', sub: s.title }; }
-    else if (PRACTICE) v = { href: 'practice.html' + location.search, title: 'DT 연습', sub: CFG.practice.title };
-    else if (STAGE) { const st = STAGES.find(x => x.id === track); if (st) v = { href: 'stage.html', title: '단계별 문제', sub: `${st.part} ${stageNo(st)}단계 · ${st.title}` }; }
-    else if (DRILL) { const op = opOf(track); v = { href: 'drill.html', title: '연산 연습', sub: `${op.label} ${op.tracks.indexOf(track) + 1}단계 · ${TRACK_LABEL[track]}` }; }
+    const B = CFG.lastBase || '';
+    if (HW) { const s = hwSet(); if (s) v = { href: B + 'homework.html', title: '숙제', sub: s.title }; }
+    else if (PRACTICE) v = { href: B + 'practice.html' + location.search, title: 'DT 연습', sub: CFG.practice.title };
+    else if (STAGE) { const st = STAGES.find(x => x.id === track); if (st) v = { href: B + 'stage.html', title: '단계별 문제', sub: `${st.part} ${stageNo(st)}단계 · ${st.title}` }; }
+    else if (DRILL) { const op = opOf(track); v = { href: B + 'drill.html', title: '연산 연습', sub: `${op.label} ${op.tracks.indexOf(track) + 1}단계 · ${TRACK_LABEL[track]}` }; }
+    else if (CFG.grade) {
+      const tabName = { concept: '개념', period: `${PERIOD_NAME} 퀴즈`, practice: '연습', wrong: '오답노트' }[tab] || '';
+      v = { href: B + location.pathname.split('/').pop(), title: CFG.shortTitle || heading, sub: [tabName, Object.keys(TRACK_LABEL).filter(t => (DATA[t] || []).length).length > 1 ? TRACK_LABEL[track] : ''].filter(Boolean).join(' · ') };
+    }
     if (v) try { localStorage.setItem(CFG.lastKey, JSON.stringify({ ...v, at: Date.now() })); } catch (e) {}
   }
 
@@ -1587,7 +1597,7 @@
   document.title = heading;
   // CFG.compact: 이레 수학 안쪽 화면 — 큰 로고·설명·다른 메뉴 없이 한 줄 머리글 (문제가 바로 보이게)
   $('#app').innerHTML = CFG.compact ? `
-    <header class="cbar"><a class="home" href="${CFG.home || 'index.html'}">${CFG.homeLabel || '← 처음'}</a><h1>${CFG.shortTitle || heading}</h1></header>
+    <header class="cbar"><a class="home" href="${CFG.home || 'index.html'}">${CFG.homeLabel || '← 처음'}</a><h1>${CFG.shortTitle || heading}</h1>${(CFG.links || []).map(l => `<a class="cbar-link" href="${l.href}">${l.short || l.label}</a>`).join('')}</header>
     <section class="picker" id="picker" aria-label="${HW ? '숙제 정보' : '단계'}"></section>
     <nav class="chips" id="tabs" aria-label="퀴즈 종류"></nav>
     <section class="day" id="day" aria-live="polite"></section>

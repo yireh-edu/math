@@ -237,7 +237,7 @@
   function recordLast() {
     const c = cur(); if (!CFG.lastKey || !c) return;
     const nx = nextCard(c);
-    try { localStorage.setItem(CFG.lastKey, JSON.stringify({ href: 'dt.html', title: 'DT 익히기', sub: `${c.label}${nx ? ' · 다음: ' + nx.name : ' · 다 익혔어요'}`, at: Date.now() })); } catch (e) {}
+    try { localStorage.setItem(CFG.lastKey, JSON.stringify({ href: (CFG.lastBase || '') + 'dt.html?next=' + c.id, title: 'DT 익히기', sub: `${c.label}${nx ? ' · 다음: ' + nx.name : ' · 다 익혔어요'}`, at: Date.now() })); } catch (e) {}
   }
 
   function go(id) {
