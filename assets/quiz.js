@@ -22,6 +22,17 @@
   const TRACK_LABEL = { s1: '1학기', s2: '2학기', elem: '초등', mid: '중등', high: '고등', general: '전체', bible: '성경', ...(window.QUIZ_TRACKS || {}) };
   // 고르기 순서 (CFG.trackOrder, 예: 이레 영어 ['e12', 'e34', 'e56', 'mid', 'high']), 없으면 위 순서
   const TRACK_KEYS = CFG.trackOrder || Object.keys(TRACK_LABEL);
+  // 첫 화면에서 읽지 않는 큰 단계 (CFG.lazyData = { 단계: { src, n } }, 예: 이레 영어 기본 어휘): 그 단계를 고를 때 받음
+  const LAZY = CFG.lazyData || {};
+  const hasTrack = t => (DATA[t] || []).length > 0 || !!LAZY[t];
+  const trackN = t => (DATA[t] || []).length || (LAZY[t] && LAZY[t].n) || 0;
+  // 단계 바꾸기 (고르기 칸·다음 단계 버튼)
+  function pickTrack(t) {
+    stopSpeech(); closeScratch(); track = t; save(`track-${CFG.grade || 'level'}`, track);
+    if (DRILL) { save(`op-${opOf(track).key}`, track); tab = 'practice'; save(`tabsel-${CFG.grade}`, tab); start(true); return; }
+    if (STAGE) { tab = 'practice'; save(`tabsel-${CFG.grade}`, tab); start(); return; }
+    tab = 'period'; save(`tabsel-${CFG.grade}`, tab); view = THIS_PERIOD; start();
+  }
   // 연산 연습 모드: 문제를 자릿수 단계별로 만들어 둔 것(drill-data.js)을 연습·오답노트로 풂
   const DRILL = CFG.mode === 'drill';
   const OPS = DRILL ? (window.QUIZ_OPS || []) : [];
@@ -857,7 +868,7 @@
           <div class="chips levels">${op.tracks.map((t, i) => `<button class="chip" type="button" data-track="${t}" aria-pressed="${t === track}"><span class="n">${i + 1}</span>${TRACK_LABEL[t]}</button>`).join('')}</div></div>`;
       return;
     }
-    const tracks = TRACK_KEYS.filter(t => (DATA[t] || []).length);
+    const tracks = TRACK_KEYS.filter(hasTrack);
     if (CFG.compact && !pickerOpen) {
       $('#picker').innerHTML = `<div class="pick-sum"><span class="pick-now">${CFG.grade ? `<span class="pick-part">${GRADE_LABEL[CFG.grade]}</span> ` : ''}${tracks.length > 1 ? TRACK_LABEL[track] : ''}</span>
         <button class="btn ghost small" type="button" data-act="picker-open" aria-expanded="false">${[CFG.grade ? '학년' : '', tracks.length > 1 ? CFG.trackLabel || '학기' : ''].filter(Boolean).join('·')} 바꾸기 ▾</button></div>`;
@@ -866,7 +877,7 @@
     $('#picker').innerHTML = `${CFG.compact ? `<div class="pick-sum"><span class="pick-now">${[CFG.grade ? '학년' : '', tracks.length > 1 ? CFG.trackLabel || '학기' : ''].filter(Boolean).join('·')} 고르기</span><button class="btn ghost small" type="button" data-act="picker-close" aria-expanded="true">접기 ▴</button></div>` : ''}
       ${CFG.grade ? `<div class="pick-row"><span class="lbl">학년</span><strong>${GRADE_LABEL[CFG.grade]}</strong><a href="index.html">다른 학년 고르기</a></div>` : ''}
       ${tracks.length > 1 ? `<div class="pick-row"><span class="lbl">${CFG.trackLabel || '학기'}</span>
-        <div class="seg track">${tracks.map(t => `<button type="button" data-track="${t}" aria-pressed="${t === track}">${TRACK_LABEL[t]} <span class="n">${DATA[t].length}</span></button>`).join('')}</div>
+        <div class="seg track">${tracks.map(t => `<button type="button" data-track="${t}" aria-pressed="${t === track}">${TRACK_LABEL[t]} <span class="n">${trackN(t)}</span></button>`).join('')}</div>
       </div>` : ''}`;
   }
   function renderTabs() {
@@ -960,7 +971,7 @@
     else if (DRILL) { const op = opOf(track); v = { href: B + 'drill.html', title: '연산 연습', sub: `${op.label} ${op.tracks.indexOf(track) + 1}단계 · ${TRACK_LABEL[track]}` }; }
     else if (CFG.grade) {
       const tabName = { concept: '개념', period: `${PERIOD_NAME} 퀴즈`, practice: '연습', wrong: '오답노트' }[tab] || '';
-      v = { href: B + location.pathname.split('/').pop(), title: CFG.shortTitle || heading, sub: [tabName, TRACK_KEYS.filter(t => (DATA[t] || []).length).length > 1 ? TRACK_LABEL[track] : ''].filter(Boolean).join(' · ') };
+      v = { href: B + location.pathname.split('/').pop(), title: CFG.shortTitle || heading, sub: [tabName, TRACK_KEYS.filter(hasTrack).length > 1 ? TRACK_LABEL[track] : ''].filter(Boolean).join(' · ') };
     }
     if (v) try { localStorage.setItem(CFG.lastKey, JSON.stringify({ ...v, at: Date.now() })); } catch (e) {}
   }
@@ -1501,11 +1512,17 @@
     const tr = e.target.closest('[data-track]');
     if (tr) {
       pickerOpen = false;
-      if (tr.dataset.track === track) { renderPicker(); return; }
-      stopSpeech(); closeScratch(); track = tr.dataset.track; save(`track-${CFG.grade || 'level'}`, track);
-      if (DRILL) { save(`op-${opOf(track).key}`, track); tab = 'practice'; save(`tabsel-${CFG.grade}`, tab); start(true); return; }
-      if (STAGE) { tab = 'practice'; save(`tabsel-${CFG.grade}`, tab); start(); return; }
-      tab = 'period'; save(`tabsel-${CFG.grade}`, tab); view = THIS_PERIOD; start(); return;
+      const want = tr.dataset.track;
+      if (want === track) { renderPicker(); return; }
+      if (LAZY[want] && !(DATA[want] || []).length) {
+        // 아직 안 받은 단계: 문제 파일을 받은 뒤 바꿈
+        tr.disabled = true;
+        const s = document.createElement('script'); s.src = LAZY[want].src;
+        s.onload = () => { if ((DATA[want] || []).length) pickTrack(want); else { tr.disabled = false; alert('문제를 받지 못했어요. 다시 눌러 주세요.'); } };
+        s.onerror = () => { s.remove(); tr.disabled = false; alert('문제를 받지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'); };
+        document.body.appendChild(s); return;
+      }
+      pickTrack(want); return;
     }
     const tb = e.target.closest('[data-tab]');
     if (tb) {
