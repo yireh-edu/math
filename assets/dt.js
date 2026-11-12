@@ -1,6 +1,6 @@
 /*
  * 이레 수학 · DT (정의 Definition · 정리 Theorem) 페이지 프로그램 → hw-site/assets/dt.js
- * 데이터는 assets/dt-data.js 의 window.DT_COURSES (irae-src/dt-map.js 에서 만듦)
+ * 데이터는 assets/dt-data.js 의 window.DT_COURSES (src/dt-map.js 에서 만듦)
  *   배우기: 과정별 DT 카드. 앞 DT를 누르면 그 카드로 감
  *   외우기: 카드를 보고 떠올린 뒤 [정답 보기] → [알았어요]/[다시 볼래요]. 다시 볼 카드는 뒤로 돌아옴
  *   이레 DT집: 외운 카드 모아 보기
