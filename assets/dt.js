@@ -247,13 +247,19 @@
     renderAll();
   }
 
+  // 여기서 학년(과정)을 직접 바꾸면 첫 화면의 '내 학년'도 따라감 (CFG.gradeKey, CFG.gradeOf: 과정 → 학년)
+  //   확률과 통계·기하처럼 학년이 정해지지 않은 과정은 그대로 둠
+  function syncGrade() {
+    const g = CFG.gradeKey && (CFG.gradeOf || {})[course];
+    if (g) try { localStorage.setItem(CFG.gradeKey, JSON.stringify(g)); } catch (e) {}
+  }
   document.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || !$('#app').contains(b)) return;
     // 학년·메뉴를 직접 고르면 주소의 #카드번호를 지움 (새로고침했을 때 그 카드로 되돌아가지 않게)
     if ((b.dataset.part || b.dataset.course || b.dataset.tab) && location.hash) history.replaceState(null, '', location.pathname + location.search);
-    if (b.dataset.part) { const c = COURSES.find(x => x.part === b.dataset.part); if (c && c.part !== cur().part) { course = c.id; save('course', course); focusId = ''; renderAll(); } return; }
+    if (b.dataset.part) { const c = COURSES.find(x => x.part === b.dataset.part); if (c && c.part !== cur().part) { course = c.id; save('course', course); syncGrade(); focusId = ''; renderAll(); } return; }
     if (b.dataset.act === 'picker-open' || b.dataset.act === 'picker-close') { pickerOpen = b.dataset.act === 'picker-open'; renderPicker(); return; }
-    if (b.dataset.course) { pickerOpen = false; course = b.dataset.course; save('course', course); focusId = ''; query = ''; renderAll(); return; }
+    if (b.dataset.course) { pickerOpen = false; course = b.dataset.course; save('course', course); syncGrade(); focusId = ''; query = ''; renderAll(); return; }
     if (b.dataset.tab) { tab = b.dataset.tab; save('tab', tab); focusId = ''; renderAll(); window.scrollTo({ top: $('#tabs').offsetTop - 12 }); return; }
     if (b.dataset.go) { go(b.dataset.go); history.replaceState(null, '', '#' + b.dataset.go); return; }
     if (b.dataset.unknow) { const kn = known(); delete kn[b.dataset.unknow]; save('known', kn); if (memo && memo.course === BY_ID.get(b.dataset.unknow).course && !memo.queue.includes(b.dataset.unknow)) { memo.queue.push(b.dataset.unknow); save('memo', memo); } renderAll(); return; }
