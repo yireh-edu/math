@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Nanum+Pen+Script&display=swap">
-<link rel="stylesheet" href="assets/quiz.css?v=202611160113">
-<link rel="stylesheet" href="assets/dt.css?v=202611160113">
+<link rel="stylesheet" href="assets/quiz.css?v=202611160208">
+<link rel="stylesheet" href="assets/dt.css?v=202611160208">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#C8392B">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/app-192.png">
@@ -197,10 +197,12 @@
 #irae-bk .bk-close{float:right;border:0;padding:4px 8px;font-size:22px;line-height:1}
 </style>
 <script>(function () {
-  var P = 'irae-', AT = 'irae-backup-at';
+  // 기록 키: 예전부터 쓰던 'irae-' + 새로 만드는 'yireh-'
+  var AT = 'irae-backup-at';
+  function mine(k) { return k.indexOf('irae-') === 0 || k.indexOf('yireh-') === 0; }
   function collect() {
     var data = {};
-    try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf(P) === 0) data[k] = localStorage.getItem(k); } } catch (e) {}
+    try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && mine(k)) data[k] = localStorage.getItem(k); } } catch (e) {}
     return data;
   }
   function count(data) { var n = 0; for (var k in data) if (k !== AT) n++; return n; }
@@ -227,7 +229,7 @@
   }
   function valid(obj) {
     if (!obj || obj.app !== 'irae' || !obj.data || typeof obj.data !== 'object') return false;
-    for (var k in obj.data) if (k.indexOf(P) !== 0 || typeof obj.data[k] !== 'string') return false;
+    for (var k in obj.data) if (!mine(k) || typeof obj.data[k] !== 'string') return false;
     return true;
   }
   function when(t) {
@@ -370,8 +372,8 @@
 <body>
 <div class="wrap" id="app"></div>
 <script>window.QUIZ_CONFIG = {"mode":"dt","practicePage":"practice.html","title":"이레 수학 DT 카드","logo":"assets/yireh-math-wide.svg","logoText":"이레 수학","compact":true,"home":"index.html","homeLabel":"← 처음","lastKey":"irae-math-last","shortTitle":"DT 익히기","gradeKey":"irae-math-grade","gradeOf":{"E1":"E1","E2":"E2","E3":"E3","E4":"E4","E5":"E5","E6":"E6","M1":"M1","M2":"M2","M3":"M3","C1":"H1","C2":"H1","AL":"H2","CA":"H3"},"eyebrow":"정의(D)와 정리(T)를 배우고 외워요","lead":"수학은 약속(정의)과 그 약속으로 증명한 사실(정리)로 쌓여요. 학년을 고르고 카드를 배운 뒤, 외우기로 내 것으로 만들어요.","links":[{"href":"stage.html","label":"단계별 문제 →"},{"href":"drill.html","label":"+ − × ÷ 연산 연습 →"}],"footer":"외운 카드는 이 기기에 저장돼요 · 아래 ‘기록 백업’으로 옮길 수 있어요"};</script>
-<script src="assets/dt-data.js?v=202611160113"></script>
-<script src="assets/dt.js?v=202611160113"></script>
+<script src="assets/dt-data.js?v=202611160208"></script>
+<script src="assets/dt.js?v=202611160208"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(function () {});
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});

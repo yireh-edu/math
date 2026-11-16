@@ -91,7 +91,7 @@
   }
   // 단계별 문제: 다른 과정(초등·중등·고등)이면 그 과정에서 열린 마지막 단계로
   function alignStage(g) {
-    put('irae-math-grade-set', g);
+    put('yireh-math-grade-set', g);
     const part = partOf(g), curSt = STAGES.find(x => x.id === get('irae-stage-track-level', ''));
     if (!curSt || curSt.part !== part) {
       const list = STAGES.filter(x => x.part === part), open = list.filter(x => stageOpen(x.id));
@@ -100,11 +100,12 @@
     }
   }
   // DT 화면에서 학년을 바꾼 경우(irae-math-grade 만 바뀜): 첫 화면을 열 때 단계별 문제 과정도 맞춤
-  //   'irae-math-grade-set' = 단계별 문제를 마지막으로 맞춘 학년. 없으면(예전부터 쓰던 학생) 지금 학년으로 두고 건드리지 않음
+  //   'yireh-math-grade-set' = 단계별 문제를 마지막으로 맞춘 학년. 없으면(예전부터 쓰던 학생) 지금 학년으로 두고 건드리지 않음
   function syncFromElsewhere() {
-    const g = get('irae-math-grade', ''), done = get('irae-math-grade-set', null);
+    try { localStorage.removeItem('irae-math-grade-set'); } catch (e) {}   // 잠깐 쓰던 옛 이름(2026-11-16) 정리
+    const g = get('irae-math-grade', ''), done = get('yireh-math-grade-set', null);
     if (!g) return;
-    if (done == null) { put('irae-math-grade-set', g); return; }
+    if (done == null) { put('yireh-math-grade-set', g); return; }
     if (done !== g) alignStage(g);
   }
   // [이어서 풀기]가 전 학년의 DT(dt.html?next=M2, practice.html?dt=M2-…/?mix=M2)를 가리키면
