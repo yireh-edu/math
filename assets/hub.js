@@ -92,6 +92,16 @@
       const t = (open.at(-1) || list[0]);
       if (t) put('irae-stage-track-level', t.id);
     }
+    fixLast(dc);
+  }
+  // [이어서 풀기]가 전 학년의 DT(dt.html?next=M2, practice.html?dt=M2-…/?mix=M2)를 가리키면
+  // 누르는 순간 DT 과정이 전 학년으로 되돌아가므로, 새 학년의 DT 익히기 길로 바꿔 둠. 단계별 문제는 설명만 새로.
+  function fixLast(dc) {
+    const key = CFG.lastKey || 'irae-math-last', last = get(key, null);
+    if (!last || !last.href) return;
+    const m = /^(?:dt\.html\?next=|practice\.html\?(?:dt|mix)=)([A-Za-z0-9]+)/.exec(last.href);
+    if (m && m[1] !== dc && COURSES.some(c => c.id === dc)) { const t = dtTile(); put(key, { href: t.href, title: 'DT 익히기', sub: t.sub, at: Date.now() }); }
+    else if (last.href === 'stage.html') { const t = stageTile(); if (t.sub) put(key, { ...last, sub: t.sub }); }
   }
 
   const ICON = {
@@ -135,6 +145,8 @@
     if (b.dataset.grade) { setGrade(b.dataset.grade); pickGrade = false; render(); }
   });
   render();
+  // 뒤로 가기로 돌아왔을 때(페이지 캐시) 예전 화면이 그대로 보이지 않게 다시 그림
+  window.addEventListener('pageshow', e => { if (e.persisted) render(); });
   // 맨 아래 안내는 한 번만 그림 (로그인·기록 백업 버튼이 여기에 붙음)
   const ft = document.createElement('footer'); ft.innerHTML = CFG.footer || ''; $('#hub').after(ft);
   window.HUB_DEBUG = { render, setGrade };
