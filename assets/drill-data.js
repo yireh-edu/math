@@ -54,7 +54,7 @@
     const keys = [];
     for (const lv of op.levels) {
       const key = `${op.key}-${lv.join('')}`;
-      const r = rng(`irae-drill-${key}`), seen = new Set(), items = [];
+      const r = rng(`yireh-drill-${key}`), seen = new Set(), items = [];
       for (let tries = 0; items.length < PER_LEVEL && tries < PER_LEVEL * 20; tries++) {
         const p = make(op, lv, r);
         if (!p || seen.has(`${p.a}|${p.b}`)) continue;

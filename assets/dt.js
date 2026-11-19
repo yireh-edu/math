@@ -6,8 +6,8 @@
  *   이레 DT집: 외운 카드 모아 보기
  *   익히기 길: 앞 DT 순서대로 한 장씩 — 배우기 → 외우기 → 문제로 익히기(practice.html, 80% 이상) → 다음 카드가 열림.
  *             익힌 카드가 모이면 섞어 풀기(처음 보는 꼴에도 꺼내 쓰기)
- * 기록: localStorage 'irae-dt-known' = { 카드번호: 외운 날 }, 'irae-dt-course', 'irae-dt-tab'
- *       문제로 익힌 기록은 DT 연습 화면이 'irae-dtp-stage-best' = { 카드번호: 가장 많이 맞힌 수 } 에 둠
+ * 기록: localStorage 'yireh-dt-known' = { 카드번호: 외운 날 }, 'yireh-dt-course', 'yireh-dt-tab'
+ *       문제로 익힌 기록은 DT 연습 화면이 'yireh-dtp-stage-best' = { 카드번호: 가장 많이 맞힌 수 } 에 둠
  */
 (function () {
   const CFG = window.QUIZ_CONFIG || {};
@@ -17,8 +17,8 @@
   for (const c of COURSES) for (const it of c.items) BY_ID.set(it.id, Object.assign(it, { course: c.id }));
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
-  function load(name, fb) { try { const v = JSON.parse(localStorage.getItem('irae-dt-' + name)); return v == null ? fb : v; } catch (e) { return fb; } }
-  function save(name, v) { try { localStorage.setItem('irae-dt-' + name, JSON.stringify(v)); } catch (e) {} }
+  function load(name, fb) { try { const v = JSON.parse(localStorage.getItem('yireh-dt-' + name)); return v == null ? fb : v; } catch (e) { return fb; } }
+  function save(name, v) { try { localStorage.setItem('yireh-dt-' + name, JSON.stringify(v)); } catch (e) {} }
   function today() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
 
   let course = load('course', COURSES.length ? COURSES[0].id : '');
@@ -43,7 +43,7 @@
   const PRACTICE = CFG.practicePage || 'practice.html';
   const countOf = id => COUNTS[id] || 0;
   const passOf = id => Math.ceil(Math.min(10, countOf(id)) * 0.8);
-  function bestOf(id) { try { return (JSON.parse(localStorage.getItem('irae-dtp-stage-best')) || {})[id] || 0; } catch (e) { return 0; } }
+  function bestOf(id) { try { return (JSON.parse(localStorage.getItem('yireh-dtp-stage-best')) || {})[id] || 0; } catch (e) { return 0; } }
   const solved = id => !countOf(id) || bestOf(id) >= passOf(id);
   const mastered = id => !!known()[id] && solved(id);
   // 열림: 같은 학년 안의 앞 DT를 모두 익힘 (다른 학년의 앞 DT는 그 학년 길에서)
@@ -260,7 +260,10 @@
     if (b.dataset.part) { const c = COURSES.find(x => x.part === b.dataset.part); if (c && c.part !== cur().part) { course = c.id; save('course', course); syncGrade(); focusId = ''; renderAll(); } return; }
     if (b.dataset.act === 'picker-open' || b.dataset.act === 'picker-close') { pickerOpen = b.dataset.act === 'picker-open'; renderPicker(); return; }
     if (b.dataset.course) { pickerOpen = false; course = b.dataset.course; save('course', course); syncGrade(); focusId = ''; query = ''; renderAll(); return; }
-    if (b.dataset.tab) { tab = b.dataset.tab; save('tab', tab); focusId = ''; renderAll(); window.scrollTo({ top: $('#tabs').offsetTop - 12 }); return; }
+    if (b.dataset.tab) {
+      // 외우기 탭을 직접 열면: 익히기 길에서 시작한 1장짜리 외우기는 버리고 남은 카드 전체로 시작
+      if (b.dataset.tab === 'memo' && memo && memo.one) newMemo();
+      tab = b.dataset.tab; save('tab', tab); focusId = ''; renderAll(); window.scrollTo({ top: $('#tabs').offsetTop - 12 }); return; }
     if (b.dataset.go) { go(b.dataset.go); history.replaceState(null, '', '#' + b.dataset.go); return; }
     if (b.dataset.unknow) { const kn = known(); delete kn[b.dataset.unknow]; save('known', kn); if (memo && memo.course === BY_ID.get(b.dataset.unknow).course && !memo.queue.includes(b.dataset.unknow)) { memo.queue.push(b.dataset.unknow); save('memo', memo); } renderAll(); return; }
     const act = b.dataset.act;

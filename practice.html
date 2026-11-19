@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Nanum+Pen+Script&display=swap">
-<link rel="stylesheet" href="assets/quiz.css?v=202611160208">
-<link rel="preload" href="assets/quiz.js?v=202611160208" as="script">
+<link rel="stylesheet" href="assets/quiz.css?v=202611190521">
+<link rel="preload" href="assets/quiz.js?v=202611190521" as="script">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#C8392B">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/app-192.png">
@@ -19,35 +19,35 @@
 <meta name="robots" content="noindex, nofollow">
 <style>html.gated body>*:not(#gate){display:none !important}
 #gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#F6F8FB;z-index:9999;font-family:'IBM Plex Sans KR',system-ui,sans-serif;padding:16px}
-#gate form,#irae-join .jc{background:#fff;border:1px solid #DDE3EA;border-radius:18px;padding:28px 24px;width:100%;max-width:320px;text-align:center;box-shadow:0 4px 18px rgba(0,0,0,.06)}
-#gate h2,#irae-join h2{margin:0 0 6px;font-size:22px;color:#18212E}#gate p,#irae-join p{margin:0 0 16px;color:#5B6675;font-size:15px}
-#gate input,#irae-join input{width:100%;box-sizing:border-box;font-size:26px;letter-spacing:.3em;text-align:center;padding:10px;border:1.5px solid #C9D2DC;border-radius:12px;margin-bottom:12px}
-#gate button,#irae-join button{width:100%;font-size:17px;padding:12px;border:0;border-radius:12px;background:#18212E;color:#fff;cursor:pointer}
-#gate .err,#irae-join .err{color:#C8392B;min-height:1.4em;margin:10px 0 0;font-size:14px}
-#gate .kakao,#irae-join .kakao,.irae-acc .kakao{background:#FEE500;color:#191919;font-weight:700}
+#gate form,#yireh-join .jc{background:#fff;border:1px solid #DDE3EA;border-radius:18px;padding:28px 24px;width:100%;max-width:320px;text-align:center;box-shadow:0 4px 18px rgba(0,0,0,.06)}
+#gate h2,#yireh-join h2{margin:0 0 6px;font-size:22px;color:#18212E}#gate p,#yireh-join p{margin:0 0 16px;color:#5B6675;font-size:15px}
+#gate input,#yireh-join input{width:100%;box-sizing:border-box;font-size:26px;letter-spacing:.3em;text-align:center;padding:10px;border:1.5px solid #C9D2DC;border-radius:12px;margin-bottom:12px}
+#gate button,#yireh-join button{width:100%;font-size:17px;padding:12px;border:0;border-radius:12px;background:#18212E;color:#fff;cursor:pointer}
+#gate .err,#yireh-join .err{color:#C8392B;min-height:1.4em;margin:10px 0 0;font-size:14px}
+#gate .kakao,#yireh-join .kakao,.yireh-acc .kakao{background:#FEE500;color:#191919;font-weight:700}
 #gate .gart{display:block;width:132px;height:auto;margin:-8px auto 4px}
 #gate .or{display:flex;align-items:center;gap:10px;color:#8A94A3;font-size:13px;margin:16px 0}#gate .or:before,#gate .or:after{content:'';flex:1;border-top:1px solid #DDE3EA}
-#irae-join{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(10,14,20,.45);font-family:'IBM Plex Sans KR',system-ui,sans-serif}
-#irae-join .later{background:transparent;color:#5B6675;font-size:15px;margin-top:6px}
-.irae-acc{display:flex;width:100%;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-size:13px;color:var(--muted,#5A6576)}
-.irae-acc img{width:20px;height:20px;border-radius:50%;object-fit:cover}
-.irae-acc button{font:inherit;font-size:13px;padding:5px 12px;border-radius:999px;border:1px solid var(--line,#D6DEE8);background:transparent;color:var(--ink,#18212E);cursor:pointer}
-.irae-acc button.kakao{border-color:#FEE500}</style>
+#yireh-join{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(10,14,20,.45);font-family:'IBM Plex Sans KR',system-ui,sans-serif}
+#yireh-join .later{background:transparent;color:#5B6675;font-size:15px;margin-top:6px}
+.yireh-acc{display:flex;width:100%;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-size:13px;color:var(--muted,#5A6576)}
+.yireh-acc img{width:20px;height:20px;border-radius:50%;object-fit:cover}
+.yireh-acc button{font:inherit;font-size:13px;padding:5px 12px;border-radius:999px;border:1px solid var(--line,#D6DEE8);background:transparent;color:var(--ink,#18212E);cursor:pointer}
+.yireh-acc button.kakao{border-color:#FEE500}</style>
 <script>(function () {
-  var K = 'irae-gate', H = '519aa7ff', SERVER = 'https://yireh-auth.yireh-edu.workers.dev';
-  var TK = 'irae-login', UK = 'irae-login-user', QK = 'irae-sync-q';
+  var K = 'yireh-gate', H = '79d959ad', SERVER = 'https://yireh-auth.yireh-edu.workers.dev';
+  var TK = 'yireh-login', UK = 'yireh-login-user', QK = 'yireh-sync-q';
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   // 점검용: 이 컴퓨터에서 띄운 서버로 바꿔 끼우기 (localhost 주소만)
-  var TS = get('irae-server-test') || ''; if (TS.indexOf('http://127.0.0.1:') === 0 || TS.indexOf('http://localhost:') === 0) SERVER = TS;
+  var TS = get('yireh-server-test') || ''; if (TS.indexOf('http://127.0.0.1:') === 0 || TS.indexOf('http://localhost:') === 0) SERVER = TS;
   function set(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
   function getJ(k, f) { try { var v = JSON.parse(get(k)); return v == null ? f : v; } catch (e) { return f; } }
   // 어느 앱인지: 주소의 첫 칸 (yireh-edu.github.io/home/… → home)
-  var seg = location.pathname.split('/')[1], APP = { home: 'home', math: 'math', english: 'english', note: 'note' }[seg] || window.IRAE_APP || 'home';
+  var seg = location.pathname.split('/')[1], APP = { home: 'home', math: 'math', english: 'english', note: 'note' }[seg] || window.YIREH_APP || 'home';
 
-  // 카카오에서 돌아온 경우: 주소 뒤 #irae-login=표 를 저장하고 주소는 깨끗하게
+  // 카카오에서 돌아온 경우: 주소 뒤 #yireh-login=표 를 저장하고 주소는 깨끗하게
   var fresh = false, loginErr = '';
   (function () {
-    var m = /[#&]irae-login=([^&]+)/.exec(location.hash), e = /[#&]irae-login-error=([^&]+)/.exec(location.hash);
+    var m = /[#&]yireh-login=([^&]+)/.exec(location.hash), e = /[#&]yireh-login-error=([^&]+)/.exec(location.hash);
     if (m) { set(TK, decodeURIComponent(m[1])); set(K, H); fresh = true; }
     if (e) loginErr = decodeURIComponent(e[1]);
     if (m || e) try { history.replaceState(null, '', location.pathname + location.search); } catch (x) {}
@@ -83,15 +83,15 @@
       if (j && j.ok) { set(QK, JSON.stringify(getJ(QK, []).slice(batch.length))); if (getJ(QK, []).length) setTimeout(flush, 300); }
     }, function () { flushing = false; });
   }
-  window.IRAE_AUTH = { server: SERVER, app: APP, token: token, user: user, login: login, logout: logout, refresh: refresh, send: send, flush: flush, join: join };
+  window.YIREH_AUTH = { server: SERVER, app: APP, token: token, user: user, login: login, logout: logout, refresh: refresh, send: send, flush: flush, join: join };
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
 
   // ── 반 코드로 반 들어가기 (카카오로 처음 들어왔는데 반이 없을 때) ──
   function join(force) {
     var u = user();
     // 원장·선생님은 반에 들 필요가 없어서 묻지 않음 (직접 누르면 넣을 수는 있음)
-    if (!token() || (!force && u && ((u.classes && u.classes.length) || u.role)) || document.getElementById('irae-join')) return;
-    var w = document.createElement('div'); w.id = 'irae-join';
+    if (!token() || (!force && u && ((u.classes && u.classes.length) || u.role)) || document.getElementById('yireh-join')) return;
+    var w = document.createElement('div'); w.id = 'yireh-join';
     w.innerHTML = '<form class="jc"><h2>' + ((u && u.name) ? esc(u.name) + '님, 반에 들어가요' : '반에 들어가요') + '</h2><p>선생님께 받은 <b>반 코드(6자리)</b>를 넣어 주세요.<br>그러면 푼 문제와 숙제가 선생님께 보여요.</p>' +
       '<input inputmode="numeric" autocomplete="off" maxlength="12" aria-label="반 코드"><button type="submit">반에 들어가기</button><p class="err" role="alert"></p><button type="button" class="later">나중에 할게요</button></form>';
     document.body.appendChild(w);
@@ -117,8 +117,8 @@
   function renderAcc() {
     var fs = document.querySelectorAll('footer'); if (!fs.length) return false;
     for (var i = 0; i < fs.length; i++) {
-      var f = fs[i], el = f.querySelector('.irae-acc');
-      if (!el) { el = document.createElement('div'); el.className = 'irae-acc'; f.appendChild(el); }
+      var f = fs[i], el = f.querySelector('.yireh-acc');
+      if (!el) { el = document.createElement('div'); el.className = 'yireh-acc'; f.appendChild(el); }
       var u = user();
       if (token()) {
         var staff = u && u.role;
@@ -141,7 +141,7 @@
     mo.observe(document.body, { childList: true, subtree: true });
   }
   // 퀴즈 화면은 footer를 다시 그리기도 해서, 다시 생기면 다시 붙임
-  function keepFooter() { new MutationObserver(function () { var f = document.querySelector('footer'); if (f && !f.querySelector('.irae-acc')) renderAcc(); }).observe(document.body, { childList: true, subtree: true }); }
+  function keepFooter() { new MutationObserver(function () { var f = document.querySelector('footer'); if (f && !f.querySelector('.yireh-acc')) renderAcc(); }).observe(document.body, { childList: true, subtree: true }); }
 
   function afterLoad() {
     watchFooter(); keepFooter();
@@ -162,7 +162,7 @@
   document.documentElement.classList.add('gated');
   function show() {
     var g = document.createElement('div'); g.id = 'gate';
-    g.innerHTML = '<form>' + (window.IRAE_GATE_ART ? '<img class="gart" src="' + window.IRAE_GATE_ART + '" alt="">' : '') + '<h2>이레</h2><p>카카오로 시작하거나<br>선생님께 받은 반 코드를 넣어 주세요.</p>' +
+    g.innerHTML = '<form>' + (window.YIREH_GATE_ART ? '<img class="gart" src="' + window.YIREH_GATE_ART + '" alt="">' : '') + '<h2>이레</h2><p>카카오로 시작하거나<br>선생님께 받은 반 코드를 넣어 주세요.</p>' +
       '<button type="button" class="kakao">카카오로 시작하기</button><div class="or">또는</div>' +
       '<input type="password" inputmode="numeric" autocomplete="off" aria-label="반 코드" maxlength="12"><button type="submit">반 코드로 들어가기</button><p class="err" role="alert">' + (loginErr ? '카카오 로그인이 안 됐어요. 다시 해 주세요.' : '') + '</p></form>';
     document.body.appendChild(g);
@@ -170,7 +170,7 @@
     g.querySelector('.kakao').onclick = login;
     f.addEventListener('submit', function (e) {
       e.preventDefault();
-      if (hashS('irae-gate:' + inp.value.trim()) === H) {
+      if (hashS('yireh-gate:' + inp.value.trim()) === H) {
         set(K, H);
         g.remove(); document.documentElement.classList.remove('gated');
         afterLoad();
@@ -181,25 +181,25 @@
 })();</script>
 <style>
 .bk-open{display:inline-block;margin-top:10px;padding:6px 14px;font:inherit;font-size:13px;color:var(--ink,#18212E);background:transparent;border:1px solid var(--line,#D6DEE8);border-radius:999px;cursor:pointer}
-#irae-bk{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(10,14,20,.45)}
-#irae-bk[hidden]{display:none}
-#irae-bk .bk-card{background:var(--card,#fff);color:var(--ink,#18212E);border:1px solid var(--line,#D6DEE8);border-radius:18px;padding:22px 20px;width:100%;max-width:420px;max-height:calc(100vh - 32px);overflow:auto;box-sizing:border-box;text-align:left;font-size:15px}
-#irae-bk h2{margin:0 0 6px;font-size:20px}
-#irae-bk h3{margin:18px 0 6px;font-size:16px}
-#irae-bk p{margin:0 0 10px;color:var(--muted,#5A6576);line-height:1.55}
-#irae-bk .bk-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
-#irae-bk button{font:inherit;font-size:15px;padding:10px 14px;border-radius:12px;border:1px solid var(--line,#D6DEE8);background:transparent;color:var(--ink,#18212E);cursor:pointer}
-#irae-bk button.main{background:var(--ink,#18212E);color:var(--btn-ink,#fff);border-color:var(--ink,#18212E)}
-#irae-bk button.warn{background:var(--pen,#D2372A);color:#fff;border-color:var(--pen,#D2372A)}
-#irae-bk textarea{width:100%;box-sizing:border-box;min-height:84px;font:inherit;font-size:13px;padding:10px;border:1px solid var(--line,#D6DEE8);border-radius:10px;background:var(--paper,#F6F8FB);color:var(--ink,#18212E);word-break:break-all}
-#irae-bk .bk-msg{min-height:1.4em;margin:6px 0 0;color:var(--sel,#2B4C8C);font-size:14px}
-#irae-bk .bk-msg.err{color:var(--pen,#D2372A)}
-#irae-bk .bk-close{float:right;border:0;padding:4px 8px;font-size:22px;line-height:1}
+#yireh-bk{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(10,14,20,.45)}
+#yireh-bk[hidden]{display:none}
+#yireh-bk .bk-card{background:var(--card,#fff);color:var(--ink,#18212E);border:1px solid var(--line,#D6DEE8);border-radius:18px;padding:22px 20px;width:100%;max-width:420px;max-height:calc(100vh - 32px);overflow:auto;box-sizing:border-box;text-align:left;font-size:15px}
+#yireh-bk h2{margin:0 0 6px;font-size:20px}
+#yireh-bk h3{margin:18px 0 6px;font-size:16px}
+#yireh-bk p{margin:0 0 10px;color:var(--muted,#5A6576);line-height:1.55}
+#yireh-bk .bk-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+#yireh-bk button{font:inherit;font-size:15px;padding:10px 14px;border-radius:12px;border:1px solid var(--line,#D6DEE8);background:transparent;color:var(--ink,#18212E);cursor:pointer}
+#yireh-bk button.main{background:var(--ink,#18212E);color:var(--btn-ink,#fff);border-color:var(--ink,#18212E)}
+#yireh-bk button.warn{background:var(--pen,#D2372A);color:#fff;border-color:var(--pen,#D2372A)}
+#yireh-bk textarea{width:100%;box-sizing:border-box;min-height:84px;font:inherit;font-size:13px;padding:10px;border:1px solid var(--line,#D6DEE8);border-radius:10px;background:var(--paper,#F6F8FB);color:var(--ink,#18212E);word-break:break-all}
+#yireh-bk .bk-msg{min-height:1.4em;margin:6px 0 0;color:var(--sel,#2B4C8C);font-size:14px}
+#yireh-bk .bk-msg.err{color:var(--pen,#D2372A)}
+#yireh-bk .bk-close{float:right;border:0;padding:4px 8px;font-size:22px;line-height:1}
 </style>
 <script>(function () {
-  // 기록 키: 예전부터 쓰던 'irae-' + 새로 만드는 'yireh-'
-  var AT = 'irae-backup-at';
-  function mine(k) { return k.indexOf('irae-') === 0 || k.indexOf('yireh-') === 0; }
+  // 기록 키: 'yireh-'로 시작하는 것 모두
+  var AT = 'yireh-backup-at';
+  function mine(k) { return k.indexOf('yireh-') === 0; }
   function collect() {
     var data = {};
     try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && mine(k)) data[k] = localStorage.getItem(k); } } catch (e) {}
@@ -211,14 +211,14 @@
   function pipe(bytes, stream) { return new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer().then(function (b) { return new Uint8Array(b); }); }
   function encode(obj) {
     var bytes = new TextEncoder().encode(JSON.stringify(obj));
-    if (typeof CompressionStream === 'undefined') return Promise.resolve('IRAE0:' + b64(bytes));
-    return pipe(bytes, new CompressionStream('deflate-raw')).then(function (z) { return 'IRAE1:' + b64(z); }, function () { return 'IRAE0:' + b64(bytes); });
+    if (typeof CompressionStream === 'undefined') return Promise.resolve('YIREH0:' + b64(bytes));
+    return pipe(bytes, new CompressionStream('deflate-raw')).then(function (z) { return 'YIREH1:' + b64(z); }, function () { return 'YIREH0:' + b64(bytes); });
   }
   // 붙여 넣은 글(카톡 메시지 전체여도 됨)이나 파일 내용에서 백업을 꺼냄
   function decode(text) {
     text = String(text || '').trim();
     if (text.charAt(0) === '{') return Promise.resolve().then(function () { return JSON.parse(text); });
-    var m = text.replace(/\s+/g, '').match(/IRAE([01]):([A-Za-z0-9+\/=]+)/);
+    var m = text.replace(/\s+/g, '').match(/YIREH([01]):([A-Za-z0-9+\/=]+)/);
     if (!m) return Promise.reject(new Error('code'));
     return Promise.resolve().then(function () {
       var bytes = unb64(m[2]);
@@ -228,7 +228,7 @@
     }).then(function (bytes) { return JSON.parse(new TextDecoder().decode(bytes)); });
   }
   function valid(obj) {
-    if (!obj || obj.app !== 'irae' || !obj.data || typeof obj.data !== 'object') return false;
+    if (!obj || obj.app !== 'yireh' || !obj.data || typeof obj.data !== 'object') return false;
     for (var k in obj.data) if (!mine(k) || typeof obj.data[k] !== 'string') return false;
     return true;
   }
@@ -239,7 +239,7 @@
   function snapshot() {
     var now = new Date().toISOString();
     try { localStorage.setItem(AT, now); } catch (e) {}
-    return { app: 'irae', v: 1, at: now, data: collect() };
+    return { app: 'yireh', v: 1, at: now, data: collect() };
   }
 
   var box, pending = null;
@@ -248,7 +248,7 @@
   function lastText() { var t = null; try { t = localStorage.getItem(AT); } catch (e) {} return t ? '마지막 백업: ' + when(t) : '아직 백업한 적이 없어요.'; }
   function build() {
     box = document.createElement('div');
-    box.id = 'irae-bk'; box.hidden = true;
+    box.id = 'yireh-bk'; box.hidden = true;
     box.innerHTML = '<div class="bk-card" role="dialog" aria-modal="true" aria-labelledby="bk-title">' +
       '<button class="bk-close" type="button" data-bk="close" aria-label="닫기">×</button>' +
       '<h2 id="bk-title">기록 백업 · 옮기기</h2>' +
@@ -349,7 +349,7 @@
       msg('#bk-msg2', e && e.message === 'old' ? '이 브라우저가 오래돼서 이 코드를 읽지 못해요. 크롬이나 사파리를 최신으로 바꿔 주세요.' : '백업 코드가 아니거나 일부가 빠졌어요. 처음부터 끝까지 모두 복사했는지 확인해 주세요.', true);
     });
   }
-  window.IRAE_BACKUP = { open: open, collect: collect, encode: encode, decode: decode };
+  window.YIREH_BACKUP = { open: open, collect: collect, encode: encode, decode: decode };
 
   // 페이지 아래(footer)에 버튼 붙이기. 퀴즈 화면은 footer를 나중에 그려서, 생길 때까지 지켜봄
   function attach() {
@@ -371,15 +371,15 @@
 </head>
 <body>
 <div class="wrap" id="app"></div>
-<script>window.QUIZ_CONFIG = {"mode":"stage","subject":"dtp","dtPage":"dt.html","practicePage":"practice.html","title":"이레 수학 DT 연습","math":true,"speech":false,"compact":true,"home":"index.html","homeLabel":"← 처음","lastKey":"irae-math-last","shortTitle":"DT 연습","logo":"assets/yireh-math-wide.svg","logoText":"이레 수학","eyebrow":"정의와 정리를 문제로 익혀요","lead":"카드의 정의·정리를 떠올리며 풀어요. 문제마다 아래의 꼬리표를 누르면 카드를 다시 볼 수 있어요.","links":[],"footer":"익힌 기록은 이 기기에 저장돼요 · 아래 ‘기록 백업’으로 옮길 수 있어요"};</script>
+<script>window.QUIZ_CONFIG = {"mode":"stage","subject":"dtp","dtPage":"dt.html","practicePage":"practice.html","title":"이레 수학 DT 연습","math":true,"speech":false,"compact":true,"home":"index.html","homeLabel":"← 처음","lastKey":"yireh-math-last","shortTitle":"DT 연습","logo":"assets/yireh-math-wide.svg","logoText":"이레 수학","eyebrow":"정의와 정리를 문제로 익혀요","lead":"카드의 정의·정리를 떠올리며 풀어요. 문제마다 아래의 꼬리표를 누르면 카드를 다시 볼 수 있어요.","links":[],"footer":"익힌 기록은 이 기기에 저장돼요 · 아래 ‘기록 백업’으로 옮길 수 있어요"};</script>
 <script>
 window.MathJax = { tex: { inlineMath: [['$', '$']] }, svg: { fontCache: 'global' },
-  startup: { typeset: false, ready() { MathJax.startup.defaultReady(); MathJax.startup.promise.then(function () { window.IRAE_READY && window.IRAE_READY(); }); } } };
+  startup: { typeset: false, ready() { MathJax.startup.defaultReady(); MathJax.startup.promise.then(function () { window.YIREH_READY && window.YIREH_READY(); }); } } };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" async></script>
-<script src="assets/stage-data.js?v=202611160208"></script>
-<script src="assets/dt-bank.js?v=202611160208"></script>
-<script src="assets/dt-data.js?v=202611160208"></script>
+<script src="assets/stage-data.js?v=202611190521"></script>
+<script src="assets/dt-bank.js?v=202611190521"></script>
+<script src="assets/dt-data.js?v=202611190521"></script>
 <script>
 // 주소에 맞는 문제를 모아 단계 하나로 (이레 수학 DT 연습)
 (function () {
@@ -391,7 +391,7 @@ window.MathJax = { tex: { inlineMath: [['$', '$']] }, svg: { fontCache: 'global'
   (window.DT_BANK || []).forEach(function (it) { all.push(it); });
   var idsOf = function (it) { return (it.dt || []).map(function (d) { return typeof d === 'string' ? d : d.id; }); };
   var get = function (k, f) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? f : v; } catch (e) { return f; } };
-  var known = get('irae-dt-known', {}), best = get('irae-dtp-stage-best', {}), cnt = window.DT_COUNTS || {};
+  var known = get('yireh-dt-known', {}), best = get('yireh-dtp-stage-best', {}), cnt = window.DT_COUNTS || {};
   // 익힘: 외웠고, 문제가 있으면 80% 이상 맞힌 적이 있음 (dt-app.js 와 같은 기준)
   var mastered = function (id) { var n = cnt[id] || 0; return !!known[id] && (!n || (best[id] || 0) >= Math.ceil(Math.min(10, n) * 0.8)); };
   var ids, title, track, course;
@@ -413,7 +413,7 @@ window.MathJax = { tex: { inlineMath: [['$', '$']] }, svg: { fontCache: 'global'
   document.title = title + ' · 이레 수학';
 })();
 </script>
-<script src="assets/quiz.js?v=202611160208"></script>
+<script src="assets/quiz.js?v=202611190521"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(function () {});
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});

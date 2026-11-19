@@ -52,7 +52,7 @@
   const CIRCLE = 'M50 7C79 5 95 29 93 54C90 82 61 96 38 91C15 86 4 61 9 38C14 17 35 5 60 9';
   const SLASH = 'M18 88L84 10';
   const SPEAKER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
-  const KEY = HW ? 'irae-homework' : `irae-${CFG.subject}`;
+  const KEY = HW ? 'yireh-homework' : `yireh-${CFG.subject}`;
   const WEEK = CFG.period === 'week';
   const PERIOD_NAME = WEEK ? '이번 주' : '오늘의';
   const $ = s => document.querySelector(s);
@@ -99,7 +99,7 @@
   // ── 저장 (학생 브라우저) ──
   function load(name, fallback) { try { return JSON.parse(localStorage.getItem(`${KEY}-${name}`)) ?? fallback; } catch { return fallback; } }
   function save(name, value) { try { localStorage.setItem(`${KEY}-${name}`, JSON.stringify(value)); } catch {} }
-  // 학습 기록을 이레 서버로 (카카오로 로그인한 학생만, gate.js의 IRAE_AUTH가 모아 두었다가 보냄)
+  // 학습 기록을 이레 서버로 (카카오로 로그인한 학생만, gate.js의 YIREH_AUTH가 모아 두었다가 보냄)
   const SUBJ = { math: '수학', english: '영어' }[CFG.subject] || '';
   // 영어 영역 (2022 개정 영어과: 이해 = 듣기·읽기, 표현 = 말하기·쓰기). CFG.areas 일 때 문제마다 꼬리표, 결과는 서버 기록 data.areas
   const AREA_OF = { '뜻 고르기': ['이해', '읽기'], '듣고 고르기': ['이해', '듣기'], '철자 쓰기': ['표현', '쓰기'], '숙어·표현': ['이해', '읽기'], '숙어': ['이해', '읽기'],
@@ -110,7 +110,7 @@
     qs.forEach((q, i) => { const a = areaOf(q); if (!a || !rs[i]) return; const k = a[0]; out[k] = out[k] || [0, 0]; out[k][1]++; if (rs[i].correct) out[k][0]++; });
     return out;
   }
-  function report(ev) { try { if (window.IRAE_AUTH) window.IRAE_AUTH.send(ev); } catch {} }
+  function report(ev) { try { if (window.YIREH_AUTH) window.YIREH_AUTH.send(ev); } catch {} }
 
   // ── 상태 ──
   const month = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', month: 'numeric' }).format(new Date()));
@@ -960,7 +960,7 @@
     if (inp && !results.at(idx) && !touch) inp.focus({ preventScroll: true });
   }
   function renderAll() { renderPicker(); renderTabs(); renderDay(); renderStage(); recordLast(); }
-  // 첫 화면의 [이어서 풀기]: 마지막으로 보던 화면을 기억 (CFG.lastKey, 예: irae-math-last)
+  // 첫 화면의 [이어서 풀기]: 마지막으로 보던 화면을 기억 (CFG.lastKey, 예: yireh-math-last)
   function recordLast() {
     if (!CFG.lastKey || typeof location === 'undefined') return;
     let v = null;
@@ -1657,8 +1657,8 @@
     <main id="stage"></main>
     <footer>${CFG.footer || ''}${VER_TAG}</footer>`;
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && present) closePresent(); });
-  window.IRAE_READY = () => { typeset($('#stage')); if (present) typeset($('#present .p-stage')); };
+  window.YIREH_READY = () => { typeset($('#stage')); if (present) typeset($('#present .p-stage')); };
   // 점검용: 문제 하나를 만들어 보거나 과정을 바꿔 봄
-  window.IRAE_DEBUG = { pad: () => pad, deck: () => deck, build: (t, i) => { const keep = track; track = t; const q = build(pool()[i], i, Math.random); track = keep; return q; }, periodDeck: (t, p) => { const keep = track; track = t; const d = periodDeck(p); track = keep; return d; } };
+  window.YIREH_DEBUG = { pad: () => pad, deck: () => deck, build: (t, i) => { const keep = track; track = t; const q = build(pool()[i], i, Math.random); track = keep; return q; }, periodDeck: (t, p) => { const keep = track; track = t; const d = periodDeck(p); track = keep; return d; } };
   start();
 })();

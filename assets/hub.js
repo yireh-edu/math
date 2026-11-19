@@ -1,8 +1,8 @@
 /*
  * 이레 수학 · 첫 화면 (오늘 할 것) → hw-site/assets/hub.js
- *   [이어서 풀기] 마지막으로 보던 화면 (localStorage 'irae-math-last', 각 화면이 남김)
+ *   [이어서 풀기] 마지막으로 보던 화면 (localStorage 'yireh-math-last', 각 화면이 남김)
  *   네 칸: 숙제(homework.html) · 단계별 문제(stage.html) · DT 익히기(dt.html) · 연산 연습(drill.html)
- *   내 학년('irae-math-grade'): 처음 한 번 고르면 DT 학년과 단계별 문제의 과정(초등·중등·고등)을 맞춰 둠
+ *   내 학년('yireh-math-grade'): 처음 한 번 고르면 DT 학년과 단계별 문제의 과정(초등·중등·고등)을 맞춰 둠
  * 읽는 것: window.HOMEWORK(current.js) · window.HUB_STAGES(단계 목록) · window.QUIZ_OPS/QUIZ_TRACKS(drill-data.js) · window.DT_COURSES/DT_COUNTS(dt-data.js)
  */
 (function () {
@@ -25,10 +25,10 @@
   function hwTile() {
     const sets = ((window.HOMEWORK && window.HOMEWORK.sets) || []).filter(s => s && s.id && Array.isArray(s.questions) && s.questions.length);
     if (!sets.length) return { sub: '지금은 숙제가 없어요', quiet: true };
-    const cur = get('irae-homework-set', '');
+    const cur = get('yireh-homework-set', '');
     const s = sets.find(x => x.id === cur) || sets[0];
-    const done = get('irae-homework-done', {})[s.id];
-    const ses = get('irae-homework-session', {})[s.id];
+    const done = get('yireh-homework-done', {})[s.id];
+    const ses = get('yireh-homework-session', {})[s.id];
     const res = ses && Array.isArray(ses.results) ? ses.results : [];
     const n = res.filter(Boolean).length, total = s.questions.length;
     const days = s.due ? Math.round((toUTC(s.due) - toUTC(kstToday())) / 864e5) : null;
@@ -41,7 +41,7 @@
   // ── 단계별 문제 ──
   const STAGES = window.HUB_STAGES || [];
   const PASS = 8;
-  const stageBest = () => get('irae-stage-stage-best', {});
+  const stageBest = () => get('yireh-stage-stage-best', {});
   function stageOpen(id) {
     const i = STAGES.findIndex(x => x.id === id);
     if (i < 0) return false;
@@ -49,7 +49,7 @@
     return (stageBest()[STAGES[i - 1].id] || 0) >= PASS;
   }
   function stageTile() {
-    const st = STAGES.find(x => x.id === get('irae-stage-track-level', '')) || STAGES[0];
+    const st = STAGES.find(x => x.id === get('yireh-stage-track-level', '')) || STAGES[0];
     if (!st) return { sub: '' };
     const b = stageBest()[st.id] || 0, stars = b >= 10 ? 3 : b >= 9 ? 2 : b >= PASS ? 1 : 0;
     return { sub: `${st.part} ${STAGES.filter(x => x.part === st.part).indexOf(st) + 1}단계 · ${st.title}`, stars: '★'.repeat(stars) + '☆'.repeat(3 - stars) };
@@ -60,9 +60,9 @@
   const BY_ID = new Map();
   for (const c of COURSES) for (const it of c.items) BY_ID.set(it.id, { it, course: c.id });
   function dtTile() {
-    const c = COURSES.find(x => x.id === get('irae-dt-course', '')) || COURSES[0];
+    const c = COURSES.find(x => x.id === get('yireh-dt-course', '')) || COURSES[0];
     if (!c) return { sub: '' };
-    const known = get('irae-dt-known', {}), best = get('irae-dtp-stage-best', {});
+    const known = get('yireh-dt-known', {}), best = get('yireh-dtp-stage-best', {});
     const solved = id => { const n = COUNTS[id] || 0; return !n || (best[id] || 0) >= Math.ceil(Math.min(10, n) * 0.8); };
     const mastered = id => !!known[id] && solved(id);
     const open = it => it.pre.every(p => !BY_ID.has(p) || BY_ID.get(p).course !== c.id || mastered(p));
@@ -74,7 +74,7 @@
   // ── 연산 연습 ──
   function drillTile() {
     const OPS = window.QUIZ_OPS || [], TR = window.QUIZ_TRACKS || {};
-    const t = get('irae-drill-track-level', '');
+    const t = get('yireh-drill-track-level', '');
     const op = OPS.find(o => o.tracks.includes(t)) || OPS[0];
     if (!op) return { sub: '' };
     const tr = op.tracks.includes(t) ? t : op.tracks[0];
@@ -83,27 +83,26 @@
 
   // 학년을 고르면 DT 학년과 단계별 문제 과정을 맞춤 (이미 그 과정에서 풀던 단계는 그대로)
   function setGrade(g) {
-    put('irae-math-grade', g);
+    put('yireh-math-grade', g);
     const dc = dtCourseOf(g);
-    if (COURSES.some(c => c.id === dc)) put('irae-dt-course', dc);
+    if (COURSES.some(c => c.id === dc)) put('yireh-dt-course', dc);
     alignStage(g);
     fixLast(dc);
   }
   // 단계별 문제: 다른 과정(초등·중등·고등)이면 그 과정에서 열린 마지막 단계로
   function alignStage(g) {
     put('yireh-math-grade-set', g);
-    const part = partOf(g), curSt = STAGES.find(x => x.id === get('irae-stage-track-level', ''));
+    const part = partOf(g), curSt = STAGES.find(x => x.id === get('yireh-stage-track-level', ''));
     if (!curSt || curSt.part !== part) {
       const list = STAGES.filter(x => x.part === part), open = list.filter(x => stageOpen(x.id));
       const t = (open.at(-1) || list[0]);
-      if (t) put('irae-stage-track-level', t.id);
+      if (t) put('yireh-stage-track-level', t.id);
     }
   }
-  // DT 화면에서 학년을 바꾼 경우(irae-math-grade 만 바뀜): 첫 화면을 열 때 단계별 문제 과정도 맞춤
+  // DT 화면에서 학년을 바꾼 경우(yireh-math-grade 만 바뀜): 첫 화면을 열 때 단계별 문제 과정도 맞춤
   //   'yireh-math-grade-set' = 단계별 문제를 마지막으로 맞춘 학년. 없으면(예전부터 쓰던 학생) 지금 학년으로 두고 건드리지 않음
   function syncFromElsewhere() {
-    try { localStorage.removeItem('irae-math-grade-set'); } catch (e) {}   // 잠깐 쓰던 옛 이름(2026-11-16) 정리
-    const g = get('irae-math-grade', ''), done = get('yireh-math-grade-set', null);
+    const g = get('yireh-math-grade', ''), done = get('yireh-math-grade-set', null);
     if (!g) return;
     if (done == null) { put('yireh-math-grade-set', g); return; }
     if (done !== g) alignStage(g);
@@ -111,7 +110,7 @@
   // [이어서 풀기]가 전 학년의 DT(dt.html?next=M2, practice.html?dt=M2-…/?mix=M2)를 가리키면
   // 누르는 순간 DT 과정이 전 학년으로 되돌아가므로, 새 학년의 DT 익히기 길로 바꿔 둠. 단계별 문제는 설명만 새로.
   function fixLast(dc) {
-    const key = CFG.lastKey || 'irae-math-last', last = get(key, null);
+    const key = CFG.lastKey || 'yireh-math-last', last = get(key, null);
     if (!last || !last.href) return;
     const m = /^(?:dt\.html\?next=|practice\.html\?(?:dt|mix)=)([A-Za-z0-9]+)/.exec(last.href);
     if (m && m[1] !== dc && COURSES.some(c => c.id === dc)) { const t = dtTile(); put(key, { href: t.href, title: 'DT 익히기', sub: t.sub, at: Date.now() }); }
@@ -134,8 +133,8 @@
 
   function render() {
     syncFromElsewhere();
-    const g = get('irae-math-grade', '');
-    const last = get(CFG.lastKey || 'irae-math-last', null);
+    const g = get('yireh-math-grade', '');
+    const last = get(CFG.lastKey || 'yireh-math-last', null);
     const dt = dtTile();
     $('#hub').innerHTML = `
       <header class="hub-head">
