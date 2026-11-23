@@ -37,7 +37,7 @@
   const DRILL = CFG.mode === 'drill';
   const OPS = DRILL ? (window.QUIZ_OPS || []) : [];
   const opOf = t => OPS.find(o => o.tracks.includes(t));
-  // 단계별 문제 모드: 단계(QUIZ_STAGES)를 차례로 통과하면 다음 단계가 열림. 과정(초등·중등·고등)마다 첫 단계는 처음부터 열려 있음
+  // 단계별 문제 모드: 단계(QUIZ_STAGES)를 차례로 통과하면 다음 단계가 열림. 과정(초등·중등·고등)마다, 학년이 있으면 학년마다 첫 단계는 처음부터 열려 있음
   const STAGE = CFG.mode === 'stage';
   const STAGES = STAGE ? (window.QUIZ_STAGES || []) : [];
   const SHEET = DRILL || STAGE;   // 10문제를 다 쓰고 [채점하기]로 한 번에 채점
@@ -121,10 +121,13 @@
   if (!['period', 'practice', 'wrong', 'concept'].includes(tab)) tab = 'period';
   if (SHEET && tab === 'period') tab = 'practice';
   const stageBest = () => load('stage-best', {});
-  function stageOpen(id) {
+  // earned: 과정 첫 단계이거나 앞 단계를 통과해서 열린 것만 (학년 첫 단계라서 열린 것은 빼고)
+  function stageOpen(id, earned) {
     const i = STAGES.findIndex(x => x.id === id);
     if (i < 0) return false;
     if (i === 0 || STAGES[i - 1].part !== STAGES[i].part) return true;
+    // 학년마다 첫 단계도 바로 열림 (중2 학생이 중1 단계를 다 통과하지 않아도 중2부터 풀 수 있게)
+    if (!earned && STAGES[i].grade && STAGES[i - 1].grade !== STAGES[i].grade) return true;
     return (stageBest()[STAGES[i - 1].id] || 0) >= PASS;
   }
   // 단계 번호: compact(이레 수학)는 과정 안에서 1부터 (중등 1단계), 아니면 전체 순서
@@ -851,7 +854,7 @@
             <span class="stage-n">${open ? n : LOCK}</span><span class="stage-t">${esc(x.title)}</span>
             <span class="stage-stars" aria-label="별 ${stars(b)}개">${open ? starText(b) : ''}</span></button></li>`;
         }).join('')}</ol>
-        <p class="stage-note">과정마다 첫 단계는 바로 풀 수 있어요. 10문제 중 ${PASS}문제 이상 맞히면 다음 단계가 열려요.</p>`;
+        <p class="stage-note">${STAGES.some(x => x.grade) ? '학년마다' : '과정마다'} 첫 단계는 바로 풀 수 있어요. 10문제 중 ${PASS}문제 이상 맞히면 다음 단계가 열려요.</p>`;
       return;
     }
     if (DRILL) {
@@ -1560,8 +1563,9 @@
     }
     const partBtn = STAGE && e.target.closest('[data-part]');
     if (partBtn) {
-      // 과정을 바꾸면 그 과정에서 열린 단계 중 가장 높은 단계로
-      const list = STAGES.filter(x => x.part === partBtn.dataset.part), open = list.filter(x => stageOpen(x.id));
+      // 과정을 바꾸면 그 과정에서 통과해서 열었거나 풀어 본 단계 중 가장 높은 단계로
+      const best = stageBest();
+      const list = STAGES.filter(x => x.part === partBtn.dataset.part), open = list.filter(x => stageOpen(x.id, true) || x.id in best);
       const t = (open.at(-1) || list[0]).id;
       if (t !== track) { track = t; save('track-level', track); tab = 'practice'; save(`tabsel-${CFG.grade}`, tab); closeScratch(); start(); }
       return;

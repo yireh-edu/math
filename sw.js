@@ -8,29 +8,29 @@
  * - 학생 기록(localStorage)은 건드리지 않음.
  * 이 파일은 빌드할 때마다 새 버전 번호가 들어가서, 올리면 자동으로 새 버전으로 바뀝니다.
  */
-const VERSION = '202611190521';
+const VERSION = '202611230831';
 const SITE_CACHE = `yireh-hw-site-${VERSION}`;
 const CDN_CACHE = 'yireh-cdn-v1';
 const PRECACHE = [
   "./",
   "index.html",
   "homework.html",
-  "assets/hub.js?v=202611190521",
-  "assets/hub.css?v=202611190521",
+  "assets/hub.js?v=202611230831",
+  "assets/hub.css?v=202611230831",
   "drill.html",
   "stage.html",
   "dt.html",
   "practice.html",
-  "assets/dt-bank.js?v=202611190521",
-  "assets/stage-data.js?v=202611190521",
-  "assets/dt-data.js?v=202611190521",
-  "assets/dt-index.js?v=202611190521",
-  "assets/dt.js?v=202611190521",
-  "assets/dt.css?v=202611190521",
+  "assets/dt-bank.js?v=202611230831",
+  "assets/stage-data.js?v=202611230831",
+  "assets/dt-data.js?v=202611230831",
+  "assets/dt-index.js?v=202611230831",
+  "assets/dt.js?v=202611230831",
+  "assets/dt.css?v=202611230831",
   "manifest.webmanifest",
-  "assets/quiz.css?v=202611190521",
-  "assets/quiz.js?v=202611190521",
-  "assets/drill-data.js?v=202611190521",
+  "assets/quiz.css?v=202611230831",
+  "assets/quiz.js?v=202611230831",
+  "assets/drill-data.js?v=202611230831",
   "assets/yireh-math-wide.svg",
   "icons/app-192.png",
   "icons/app-512.png",

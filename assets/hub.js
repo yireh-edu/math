@@ -2,7 +2,9 @@
  * 이레 수학 · 첫 화면 (오늘 할 것) → hw-site/assets/hub.js
  *   [이어서 풀기] 마지막으로 보던 화면 (localStorage 'yireh-math-last', 각 화면이 남김)
  *   네 칸: 숙제(homework.html) · 단계별 문제(stage.html) · DT 익히기(dt.html) · 연산 연습(drill.html)
- *   내 학년('yireh-math-grade'): 처음 한 번 고르면 DT 학년과 단계별 문제의 과정(초등·중등·고등)을 맞춰 둠
+ *   내 학년('yireh-math-grade'): 고르면 DT 학년과 단계별 문제를 그 학년에 맞춤
+ *     학년마다 [이어서 풀기]와 단계별 문제 위치를 따로 기억('yireh-math-by-grade' = { 학년: { last, stage } })
+ *     → 새 학년은 처음부터(그 학년 첫 단계, 이어서 풀기 없음), 전에 풀던 학년으로 돌아가면 풀던 곳이 바로 나옴
  * 읽는 것: window.HOMEWORK(current.js) · window.HUB_STAGES(단계 목록) · window.QUIZ_OPS/QUIZ_TRACKS(drill-data.js) · window.DT_COURSES/DT_COUNTS(dt-data.js)
  */
 (function () {
@@ -16,7 +18,9 @@
   const gradeLabel = g => (GRADES.find(x => x[0] === g) || [, ''])[1];
   // 학년 → DT 과정 (고1 공통수학1, 고2 대수, 고3 미적분Ⅰ) · 단계별 문제 과정
   const dtCourseOf = g => ({ H1: 'C1', H2: 'AL', H3: 'CA' })[g] || g;
+  const gradeOfCourse = c => ({ C1: 'H1', C2: 'H1', AL: 'H2', CA: 'H3' })[c] || (GRADES.some(x => x[0] === c) ? c : '');
   const partOf = g => g[0] === 'E' ? '초등' : g[0] === 'M' ? '중등' : '고등';
+  const MEM = 'yireh-math-by-grade';
   let pickGrade = false;
 
   // ── 숙제 ──
@@ -81,40 +85,39 @@
     return { sub: `${op.label} ${op.tracks.indexOf(tr) + 1}단계 · ${TR[tr] || ''}` };
   }
 
-  // 학년을 고르면 DT 학년과 단계별 문제 과정을 맞춤 (이미 그 과정에서 풀던 단계는 그대로)
+  // 학년을 고르면: 지금 학년의 [이어서 풀기]·단계를 기억해 두고, 새 학년 것을 꺼냄 (없으면 처음부터)
   function setGrade(g) {
+    const from = get('yireh-math-grade', '');
     put('yireh-math-grade', g);
-    const dc = dtCourseOf(g);
-    if (COURSES.some(c => c.id === dc)) put('yireh-dt-course', dc);
-    alignStage(g);
-    fixLast(dc);
+    switchGrade(from, g);
   }
-  // 단계별 문제: 다른 과정(초등·중등·고등)이면 그 과정에서 열린 마지막 단계로
-  function alignStage(g) {
-    put('yireh-math-grade-set', g);
-    const part = partOf(g), curSt = STAGES.find(x => x.id === get('yireh-stage-track-level', ''));
-    if (!curSt || curSt.part !== part) {
-      const list = STAGES.filter(x => x.part === part), open = list.filter(x => stageOpen(x.id));
-      const t = (open.at(-1) || list[0]);
-      if (t) put('yireh-stage-track-level', t.id);
-    }
-  }
-  // DT 화면에서 학년을 바꾼 경우(yireh-math-grade 만 바뀜): 첫 화면을 열 때 단계별 문제 과정도 맞춤
-  //   'yireh-math-grade-set' = 단계별 문제를 마지막으로 맞춘 학년. 없으면(예전부터 쓰던 학생) 지금 학년으로 두고 건드리지 않음
+  // DT 화면에서 학년을 바꾼 경우(yireh-math-grade 만 바뀜): 첫 화면을 열 때 맞춤
+  //   'yireh-math-grade-set' = 첫 화면이 마지막으로 맞춘 학년. 없으면(예전부터 쓰던 학생) 지금 학년으로 두고 건드리지 않음
   function syncFromElsewhere() {
     const g = get('yireh-math-grade', ''), done = get('yireh-math-grade-set', null);
     if (!g) return;
     if (done == null) { put('yireh-math-grade-set', g); return; }
-    if (done !== g) alignStage(g);
+    if (done !== g) switchGrade(done, g);
   }
-  // [이어서 풀기]가 전 학년의 DT(dt.html?next=M2, practice.html?dt=M2-…/?mix=M2)를 가리키면
-  // 누르는 순간 DT 과정이 전 학년으로 되돌아가므로, 새 학년의 DT 익히기 길로 바꿔 둠. 단계별 문제는 설명만 새로.
-  function fixLast(dc) {
+  function switchGrade(from, to) {
     const key = CFG.lastKey || 'yireh-math-last', last = get(key, null);
-    if (!last || !last.href) return;
-    const m = /^(?:dt\.html\?next=|practice\.html\?(?:dt|mix)=)([A-Za-z0-9]+)/.exec(last.href);
-    if (m && m[1] !== dc && COURSES.some(c => c.id === dc)) { const t = dtTile(); put(key, { href: t.href, title: 'DT 익히기', sub: t.sub, at: Date.now() }); }
-    else if (last.href === 'stage.html') { const t = stageTile(); if (t.sub) put(key, { ...last, sub: t.sub }); }
+    const dc = dtCourseOf(to);
+    if (COURSES.some(c => c.id === dc)) put('yireh-dt-course', dc);
+    put('yireh-math-grade-set', to);
+    if (from === to) return;
+    // [이어서 풀기]가 이미 새 학년 DT(DT 화면에서 학년을 바꾸고 풀던 것)면 새 학년 것으로 둠
+    const m = last && last.href && /^(?:dt\.html\?next=|practice\.html\?(?:dt|mix)=)([A-Za-z0-9]+)/.exec(last.href);
+    const lastIsTo = !!m && gradeOfCourse(m[1]) === to;
+    const mem = get(MEM, {});
+    if (from) mem[from] = { last: lastIsTo ? ((mem[from] || {}).last || null) : last, stage: get('yireh-stage-track-level', '') };
+    const saved = mem[to];
+    if (saved && saved.stage && STAGES.some(x => x.id === saved.stage)) put('yireh-stage-track-level', saved.stage);
+    else { const st = STAGES.find(x => x.grade === to) || STAGES.find(x => x.part === partOf(to)); if (st) put('yireh-stage-track-level', st.id); }
+    if (!lastIsTo) {
+      if (saved && saved.last && saved.last.href) put(key, saved.last);
+      else try { localStorage.removeItem(key); } catch (e) {}
+    }
+    put(MEM, mem);
   }
 
   const ICON = {
@@ -142,7 +145,7 @@
         <button class="grade-btn" type="button" data-act="grade" aria-expanded="${pickGrade}">${g ? `${gradeLabel(g)} ▾` : '학년 고르기 ▾'}</button>
       </header>
       ${!g || pickGrade ? `<section class="grade-pick" aria-label="내 학년">
-        <p class="gp-q">${g ? '학년을 바꿀까요?' : '몇 학년이에요?'} <span>고르면 DT와 단계별 문제가 내 학년에 맞춰져요.</span></p>
+        <p class="gp-q">${g ? '학년을 바꿀까요?' : '몇 학년이에요?'} <span>고르면 DT와 단계별 문제가 내 학년에 맞춰져요. 전에 풀던 학년으로 돌아오면 풀던 곳부터 이어져요.</span></p>
         <div class="gp-chips">${GRADES.map(([id, l]) => `<button class="chip" type="button" data-grade="${id}" aria-pressed="${id === g}">${l}</button>`).join('')}</div>
       </section>` : ''}
       ${last && last.href ? `<a class="resume" href="${esc(last.href)}"><span class="r-play" aria-hidden="true">▶</span><span class="r-txt"><b>이어서 풀기</b><span>${esc(last.title)} · ${esc(last.sub || '')}</span></span></a>` : ''}
